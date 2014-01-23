@@ -86,6 +86,51 @@ public class Dao {
       PreparedStatement statement1 = conn.prepareStatement(sql);
       statement1.setInt(1, entry.getId());
 
+      if (tags != null) {
+        for (Tag tag : tags) {
+          Tag existingTag = load(conn, tag);
+          if (existingTag == null) {
+            tag = insert(conn, tag);
+          } else {
+            tag = existingTag;
+          }
+
+          statement1.setInt(2, tag.getId());
+          statement1.executeUpdate();
+        }
+      }
+    } else {
+      throw new SQLException("Insert failed! effected rows: " + rows);
+    }
+
+    return entry;
+  }
+
+  public Entry update(Connection conn, Entry entry, Tag[] tags) throws SQLException, ClassNotFoundException {
+
+    String sql = "UPDATE ENTRY TITLE = ?, USERNAME = ?, URL = ?, PASSWORD = ?, DESCRIPTION = ?, IP = ?, NOTE = ? WHERE ID = ?";
+
+    PreparedStatement statement = conn.prepareStatement(sql);
+    statement.setString(1, entry.getTitle());
+    statement.setString(2, entry.getUsername());
+    statement.setString(3, entry.getUrl());
+    statement.setString(4, entry.getPassword());
+    statement.setString(5, entry.getDescription());
+    statement.setString(6, entry.getIp());
+    statement.setString(7, entry.getNote());
+    statement.setInt(8, entry.getId());
+    statement.executeUpdate();
+
+    sql = "DELETE FROM ENTRY_TAG WHERE ENTRY_ID = ?";
+    PreparedStatement statement2 = conn.prepareStatement(sql);
+    statement2.setInt(1, entry.getId());
+    statement2.executeUpdate();
+
+    sql = "INSERT INTO ENTRY_TAG (ENTRY_ID, TAG_ID) VALUES (?, ?)";
+    PreparedStatement statement1 = conn.prepareStatement(sql);
+    statement1.setInt(1, entry.getId());
+
+    if (tags != null) {
       for (Tag tag : tags) {
         Tag existingTag = load(conn, tag);
         if (existingTag == null) {
@@ -97,8 +142,6 @@ public class Dao {
         statement1.setInt(2, tag.getId());
         statement1.executeUpdate();
       }
-    } else {
-      throw new SQLException("Insert failed! effected rows: " + rows);
     }
 
     return entry;
@@ -114,7 +157,7 @@ public class Dao {
       sql = "DELETE FROM ENTRY_TAG WHERE ENTRY_ID = ?";
       PreparedStatement statement1 = conn.prepareStatement(sql);
       statement1.setInt(1, entry.getId());
-      statement1.executeUpdate();      
+      statement1.executeUpdate();
     } else {
       throw new SQLException("DELETE failed. rows: " + rows);
     }
@@ -122,18 +165,42 @@ public class Dao {
     return entry;
   }
 
-  private Tag load(Connection conn, Tag tag) throws SQLException {
+  public Tag load(Connection conn, Tag tag) throws SQLException {
     String sql = "SELECT * FROM TAG WHERE TITLE = ?";
     PreparedStatement statement = conn.prepareStatement(sql);
     statement.setString(1, tag.getTitle());
     ResultSet resultSet = statement.executeQuery();
-    
+
     if (resultSet.next()) {
       Tag tag1 = new Tag();
       tag1.setId(resultSet.getInt("ID"));
       tag1.setTitle(resultSet.getString("TITLE"));
-      
+
       return tag1;
+    } else {
+      return null;
+    }
+  }
+
+  public Entry load(Connection conn, int id) throws SQLException {
+    String sql = "SELECT * FROM ENTRY WHERE ID = ?";
+    PreparedStatement statement = conn.prepareStatement(sql);
+    statement.setInt(1, id);
+    ResultSet resultSet = statement.executeQuery();
+
+    if (resultSet.next()) {
+      Entry entry = new Entry();
+
+      entry.setTitle(resultSet.getString("TITLE"));
+      entry.setUrl(resultSet.getString("URL"));
+      entry.setUsername(resultSet.getString("USERNAME"));
+      entry.setPassword(resultSet.getString("PASSWORD"));
+      entry.setDescription(resultSet.getString("DESCRIPTION"));
+      entry.setNote(resultSet.getString("NOTE"));
+      entry.setIp(resultSet.getString("IP"));
+      entry.setId(resultSet.getInt("ID"));
+
+      return entry;
     } else {
       return null;
     }
