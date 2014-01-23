@@ -1,4 +1,4 @@
-package com.mypasswords7.engine;
+package com.mypasswords7.models;
 
 /**
  * Hello world!
