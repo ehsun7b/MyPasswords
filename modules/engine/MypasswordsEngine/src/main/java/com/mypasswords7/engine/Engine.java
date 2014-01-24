@@ -14,6 +14,7 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
@@ -240,6 +241,43 @@ public class Engine {
     try (Connection conn = Database.INSTANCE.getConnection(database)) {
       Dao dao = new Dao();
       return dao.loadTagsByEntryId(conn, id);
+    }
+  }
+
+  public Entry update(Entry entry, Tag[] tags) throws NoSuchAlgorithmException, UnsupportedEncodingException, IllegalBlockSizeException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, SQLException, ClassNotFoundException {
+    entry = encrypt(entry);
+
+    try (Connection conn = Database.INSTANCE.getConnection(database)) {
+      conn.setAutoCommit(false);
+      Dao dao = new Dao();
+      entry = dao.update(conn, entry, tags);
+      conn.commit();
+    }
+
+    return entry;
+  }
+
+  public List<Entry> entries() throws SQLException, ClassNotFoundException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOException {
+    try (Connection conn = Database.INSTANCE.getConnection(database)) {
+      Dao dao = new Dao();
+      List<Entry> result = dao.entries(conn);
+      
+      for (Entry entry : result) {
+        if (entry != null) {
+          entry = decrypt(entry);
+        }
+      }
+      
+      return result;
+    }
+  }
+  
+  public List<Tag> tags() throws SQLException, ClassNotFoundException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOException {
+    try (Connection conn = Database.INSTANCE.getConnection(database)) {
+      Dao dao = new Dao();
+      List<Tag> result = dao.tags(conn);
+            
+      return result;
     }
   }
 

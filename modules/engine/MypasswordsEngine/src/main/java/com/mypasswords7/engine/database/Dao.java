@@ -110,7 +110,7 @@ public class Dao {
 
   public Entry update(Connection conn, Entry entry, Tag[] tags) throws SQLException, ClassNotFoundException {
 
-    String sql = "UPDATE ENTRY TITLE = ?, USERNAME = ?, URL = ?, PASSWORD = ?, DESCRIPTION = ?, IP = ?, NOTE = ? WHERE ID = ?";
+    String sql = "UPDATE ENTRY SET TITLE = ?, USERNAME = ?, URL = ?, PASSWORD = ?, DESCRIPTION = ?, IP = ?, NOTE = ? WHERE ID = ?";
 
     PreparedStatement statement = conn.prepareStatement(sql);
     statement.setString(1, entry.getTitle());
@@ -238,12 +238,54 @@ public class Dao {
       tag.setTitle(resultSet.getString("TITLE"));
       tag.setId(resultSet.getInt("ID"));
 
-      list.add(tag);      
+      list.add(tag);
     }
-    
+
     Tag[] result = new Tag[list.size()];
     result = list.toArray(result);
-    
+
+    return result;
+  }
+
+  public List<Entry> entries(Connection conn) throws SQLException {
+    List<Entry> result = new ArrayList<>();
+    String sql = "SELECT * FROM ENTRY";
+    PreparedStatement statement = conn.prepareStatement(sql);
+    ResultSet resultSet = statement.executeQuery();
+
+    while (resultSet.next()) {
+      Entry entry = new Entry();
+
+      entry.setTitle(resultSet.getString("TITLE"));
+      entry.setUrl(resultSet.getString("URL"));
+      entry.setUsername(resultSet.getString("USERNAME"));
+      entry.setPassword(resultSet.getString("PASSWORD"));
+      entry.setDescription(resultSet.getString("DESCRIPTION"));
+      entry.setNote(resultSet.getString("NOTE"));
+      entry.setIp(resultSet.getString("IP"));
+      entry.setId(resultSet.getInt("ID"));
+
+      result.add(entry);
+    }
+
+    return result;
+  }
+
+  public List<Tag> tags(Connection conn) throws SQLException {
+    List<Tag> result = new ArrayList<>();
+    String sql = "SELECT * FROM Tag";
+    PreparedStatement statement = conn.prepareStatement(sql);
+    ResultSet resultSet = statement.executeQuery();
+
+    while (resultSet.next()) {
+      Tag tag = new Tag();
+
+      tag.setTitle(resultSet.getString("TITLE"));
+      tag.setId(resultSet.getInt("ID"));
+
+      result.add(tag);
+    }
+
     return result;
   }
 }
