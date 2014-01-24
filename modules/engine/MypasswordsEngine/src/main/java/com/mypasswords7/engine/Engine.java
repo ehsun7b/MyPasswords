@@ -34,18 +34,20 @@ public class Engine {
   /**
    *
    * @param home String
+   * @param password
    * @throws IOException
    */
-  private Engine(String home, String password) throws IOException {
+  public Engine(String home, String password) throws IOException {
     this(new File(home), password);
   }
 
   /**
    *
    * @param homeDir File
+   * @param password
    * @throws IOException
    */
-  private Engine(File homeDir, String password) throws IOException {
+  public Engine(File homeDir, String password) throws IOException {
     this.homeDir = homeDir;
     if (!homeDir.exists() || !homeDir.isDirectory()) {
       throw new IOException("Home directory does not exist: " + homeDir.getAbsolutePath());
@@ -172,10 +174,23 @@ public class Engine {
     }
   }
 
+  public void delete(int id) throws SQLException, ClassNotFoundException {
+    try (Connection conn = Database.INSTANCE.getConnection(database)) {
+      conn.setAutoCommit(false);
+      Dao dao = new Dao();
+      dao.delete(conn, id);
+      conn.commit();
+    }
+  }
+
   public Entry load(int id) throws SQLException, ClassNotFoundException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOException {
     try (Connection conn = Database.INSTANCE.getConnection(database)) {
       Dao dao = new Dao();
-      return decrypt(dao.load(conn, id));
+      Entry entry = dao.load(conn, id);
+      if (entry != null) {
+        return decrypt(entry);
+      }
+      return null;
     }
   }
 
@@ -184,10 +199,18 @@ public class Engine {
       key = CipherUtils.getKey(password);
     }
 
-    entry.setUsername(CipherUtils.encrypt(key, entry.getUsername()));
-    entry.setPassword(CipherUtils.encrypt(key, entry.getPassword()));
-    entry.setIp(CipherUtils.encrypt(key, entry.getIp()));
-    entry.setUrl(CipherUtils.encrypt(key, entry.getUrl()));
+    if (entry.getUsername() != null) {
+      entry.setUsername(CipherUtils.encrypt(key, entry.getUsername()));
+    }
+    if (entry.getPassword() != null) {
+      entry.setPassword(CipherUtils.encrypt(key, entry.getPassword()));
+    }
+    if (entry.getIp() != null) {
+      entry.setIp(CipherUtils.encrypt(key, entry.getIp()));
+    }
+    if (entry.getUrl() != null) {
+      entry.setUrl(CipherUtils.encrypt(key, entry.getUrl()));
+    }
 
     return entry;
   }
@@ -196,13 +219,28 @@ public class Engine {
     if (key == null) {
       key = CipherUtils.getKey(password);
     }
-    
-    entry.setUsername(CipherUtils.decrypt(key, entry.getUsername()));
-    entry.setPassword(CipherUtils.decrypt(key, entry.getPassword()));
-    entry.setIp(CipherUtils.decrypt(key, entry.getIp()));
-    entry.setUrl(CipherUtils.decrypt(key, entry.getUrl()));
-    
+
+    if (entry.getUsername() != null) {
+      entry.setUsername(CipherUtils.decrypt(key, entry.getUsername()));
+    }
+    if (entry.getPassword() != null) {
+      entry.setPassword(CipherUtils.decrypt(key, entry.getPassword()));
+    }
+    if (entry.getIp() != null) {
+      entry.setIp(CipherUtils.decrypt(key, entry.getIp()));
+    }
+    if (entry.getUrl() != null) {
+      entry.setUrl(CipherUtils.decrypt(key, entry.getUrl()));
+    }
+
     return entry;
+  }
+
+  public Tag[] loadTagsByEntryId(int id) throws SQLException, ClassNotFoundException {
+    try (Connection conn = Database.INSTANCE.getConnection(database)) {
+      Dao dao = new Dao();
+      return dao.loadTagsByEntryId(conn, id);
+    }
   }
 
   public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException, NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, UnsupportedEncodingException, BadPaddingException {
@@ -213,7 +251,7 @@ public class Engine {
 
     Entry entry = engine.load(1);
     System.out.println(entry.getPassword());
-    
+
   }
 
 }

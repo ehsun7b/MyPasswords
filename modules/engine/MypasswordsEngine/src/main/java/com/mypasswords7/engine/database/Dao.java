@@ -7,6 +7,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -204,5 +206,44 @@ public class Dao {
     } else {
       return null;
     }
+  }
+
+  public void delete(Connection conn, int id) throws SQLException {
+    String sql = "DELETE FROM ENTRY WHERE ID = ?";
+    PreparedStatement statement = conn.prepareStatement(sql);
+    statement.setInt(1, id);
+    int rows = statement.executeUpdate();
+
+    if (rows == 1) {
+      sql = "DELETE FROM ENTRY_TAG WHERE ENTRY_ID = ?";
+      PreparedStatement statement1 = conn.prepareStatement(sql);
+      statement1.setInt(1, id);
+      statement1.executeUpdate();
+    } else {
+      throw new SQLException("DELETE failed. rows: " + rows);
+
+    }
+  }
+
+  public Tag[] loadTagsByEntryId(Connection conn, int id) throws SQLException {
+    String sql = "SELECT t.* FROM TAG t INNER JOIN ENTRY_TAG et ON (t.ID = et.TAG_ID) WHERE et.ENTRY_ID = ?";
+    PreparedStatement statement = conn.prepareStatement(sql);
+    statement.setInt(1, id);
+    ResultSet resultSet = statement.executeQuery();
+
+    List<Tag> list = new ArrayList<>();
+    while (resultSet.next()) {
+      Tag tag = new Tag();
+
+      tag.setTitle(resultSet.getString("TITLE"));
+      tag.setId(resultSet.getInt("ID"));
+
+      list.add(tag);      
+    }
+    
+    Tag[] result = new Tag[list.size()];
+    result = list.toArray(result);
+    
+    return result;
   }
 }

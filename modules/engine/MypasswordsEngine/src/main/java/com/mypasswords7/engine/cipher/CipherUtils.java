@@ -94,7 +94,7 @@ public class CipherUtils {
   }
   
   public static String getKey(String password) throws NoSuchAlgorithmException {    
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < 1000; ++i) {
       password = SHA256(password);
     }
     
