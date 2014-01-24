@@ -52,6 +52,7 @@ public class WebHandler implements HttpHandler {
   @Override
   public void handle(HttpExchange exchange) throws IOException {
     URI requestURI = exchange.getRequestURI();
+    String path = requestURI.getPath().toLowerCase();
 
     if (requestURI.getPath().equalsIgnoreCase("/")) {
       responseHome(exchange);
@@ -67,6 +68,8 @@ public class WebHandler implements HttpHandler {
       entriesRequest(exchange);
     } else if (requestURI.getPath().equalsIgnoreCase("/tags")) {
       tagsRequest(exchange);
+    } else if (path.endsWith(".png") || path.endsWith(".gif") || path.endsWith(".jpg") || path.endsWith(".jpeg")) {
+      loadImage(exchange);
     } else {
       fourOFour(exchange);
     }
@@ -119,13 +122,8 @@ public class WebHandler implements HttpHandler {
   private void loadJS(HttpExchange exchange) throws IOException {
     URI requestURI = exchange.getRequestURI();
     if (exchange.getRequestMethod().equalsIgnoreCase("GET")) {
-      String script = null;
-
-      if (requestURI.getRawPath().endsWith("jquery.js")) {
-        script = "js/jquery.js";
-      } else if (requestURI.getRawPath().endsWith("main.js")) {
-        script = "js/main.js";
-      }
+      String path = requestURI.getPath().toLowerCase();
+      String script = "js/" + path.substring(path.lastIndexOf("/") + 1);
 
       if (script != null) {
         Headers responseHeaders = exchange.getResponseHeaders();
@@ -154,7 +152,8 @@ public class WebHandler implements HttpHandler {
   private void loadCSS(HttpExchange exchange) throws IOException {
     URI requestURI = exchange.getRequestURI();
     if (exchange.getRequestMethod().equalsIgnoreCase("GET")) {
-      String css = null;
+      String path = requestURI.getPath().toLowerCase();
+      String css = "css/" + path.substring(path.lastIndexOf("/") + 1);
 
       if (requestURI.getRawPath().endsWith("main.css")) {
         css = "css/main.css";
@@ -500,10 +499,48 @@ public class WebHandler implements HttpHandler {
 
   private void fourOFour(HttpExchange exchange) {
     try {
-      exchange.sendResponseHeaders(404, 0);      
+      exchange.sendResponseHeaders(404, 0);
       exchange.getResponseBody().close();
     } catch (IOException ex) {
       System.out.println("Error " + ex.getMessage());
+    }
+  }
+
+  private void loadImage(HttpExchange exchange) throws IOException {
+    URI requestURI = exchange.getRequestURI();
+    if (exchange.getRequestMethod().equalsIgnoreCase("GET")) {
+
+      String path = requestURI.getPath().toLowerCase();
+      String image = "img/" + path.substring(path.lastIndexOf("/") + 1);
+
+      String mimeType = "image/png";
+      if (path.endsWith("gif")) {
+        mimeType = "image/gif";
+      } else if (path.endsWith("jpg") || path.endsWith("jpeg")) {
+        mimeType = "image/jpeg";
+      }
+
+      if (image != null) {
+        Headers responseHeaders = exchange.getResponseHeaders();
+        responseHeaders.set("Content-Type", mimeType);
+        exchange.sendResponseHeaders(200, 0);
+
+        try (OutputStream os = exchange.getResponseBody()) {
+          try (InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(image)) {
+            byte[] buffer = new byte[BUFFER_SIZE];
+            int len;
+
+            while ((len = is.read(buffer)) > 0) {
+              os.write(buffer, 0, len);
+            }
+          }
+        }
+
+        exchange.getResponseBody().close();
+      }
+    } else {
+      exchange.sendResponseHeaders(405, 0);
+      exchange.getResponseBody().close();
     }
   }
 }

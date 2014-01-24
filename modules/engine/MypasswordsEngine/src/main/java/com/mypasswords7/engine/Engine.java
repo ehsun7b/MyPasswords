@@ -280,6 +280,21 @@ public class Engine {
       return result;
     }
   }
+  
+  public List<Entry> search(String where, String order) throws SQLException, ClassNotFoundException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOException {
+    try (Connection conn = Database.INSTANCE.getConnection(database)) {
+      Dao dao = new Dao();
+      List<Entry> result = dao.search(conn, where, order);
+      
+      for (Entry entry : result) {
+        if (entry != null) {
+          entry = decrypt(entry);
+        }
+      }
+      
+      return result;
+    }
+  }
 
   public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException, NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, UnsupportedEncodingException, BadPaddingException {
     Engine engine = new Engine(".", "");

@@ -288,4 +288,37 @@ public class Dao {
 
     return result;
   }
+
+  public List<Entry> search(Connection conn, String where, String order) throws SQLException {
+    List<Entry> result = new ArrayList<>();
+
+    String sql = "SELECT E.* FROM ENTRY E INNER JOIN ENTRY_TAG ET ON (E.ID = ET.ENTRY_ID) INNER JOIN TAG T ON (T.ID = ET.TAG_ID)";
+
+    if (where != null) {
+      sql = sql.concat(" ".concat(sql));
+    }
+
+    if (order != null) {
+      sql = order.concat(" ".concat(sql));
+    }
+
+    ResultSet resultSet = conn.createStatement().executeQuery(sql);
+
+    while (resultSet.next()) {
+      Entry entry = new Entry();
+
+      entry.setTitle(resultSet.getString("TITLE"));
+      entry.setUrl(resultSet.getString("URL"));
+      entry.setUsername(resultSet.getString("USERNAME"));
+      entry.setPassword(resultSet.getString("PASSWORD"));
+      entry.setDescription(resultSet.getString("DESCRIPTION"));
+      entry.setNote(resultSet.getString("NOTE"));
+      entry.setIp(resultSet.getString("IP"));
+      entry.setId(resultSet.getInt("ID"));
+
+      result.add(entry);
+    }
+
+    return result;
+  }
 }
