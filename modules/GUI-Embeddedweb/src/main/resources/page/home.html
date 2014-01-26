@@ -10,21 +10,39 @@
     <link rel="stylesheet" href="main.css"/>
     <link rel="stylesheet" href="jquery-ui-1.10.4.custom.css"/>
 
-    <script>
-      $(function() {
-        $("#dialog").dialog({
-          height: 140,
-          modal: true
-        });
-      });
-    </script>
   </head>
   <body>
     <h1>MyPasswords 3.0</h1>
     <div>Home</div>
 
-    <div id="dialog" title="Basic dialog">
-      <p>This is the default dialog which is useful for displaying information. The dialog window can be moved, resized and closed with the 'x' icon.</p>
+
+    <!-- dialogs -->
+    <div id="dlgEnginCheck" title="Checking Engines">
+      Checking existing MyPasswords engines. Please wait ...
+    </div>
+
+    <div id="dlgLogin" title="Sign In">
+      <form id="frmLogin">
+        <table class="form">
+          <tr>
+            <td class="caption"><label for="engine">Engine:</label></td>
+            <td class="data">
+              <select id="engine" name="engine" class="ui-widget ui-state-default ui-corner-all"></select>
+            </td>
+          </tr>
+          <tr>
+            <td class="caption"><label for="password">Password:</label></td>
+            <td class="data">
+              <input class="text ui-widget-content ui-corner-all ui-state-default" type="password" name="password" id="password"/>
+            </td>
+          </tr>
+          <tr>
+            <td class="buttons" colspan="2">
+              <input type="submit" class="ui-button ui-widget ui-state-default ui-corner-all ui-state-focus" value="Sign In"/>
+            </td>
+          </tr>
+        </table>
+      </form>
     </div>
   </body>
 </html>

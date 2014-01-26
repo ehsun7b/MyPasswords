@@ -2,3 +2,19 @@ jquerybody {
     margin: 30px;
     background-color: blanchedalmond
 }
+
+table.form {
+  
+}
+
+table.form td.caption {
+  
+}
+
+table.form td.data {
+  
+}
+
+table.form td.buttons {
+  text-align: right;
+}
