@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import com.mypasswords7.engine.Engine;
 import com.mypasswords7.gui.embeddedweb.response.CountResponse;
 import com.mypasswords7.gui.embeddedweb.response.DeleteEntryResponse;
+import com.mypasswords7.gui.embeddedweb.response.EngineInfo;
+import com.mypasswords7.gui.embeddedweb.response.EnginesStatusResponse;
 import com.mypasswords7.gui.embeddedweb.response.EntriesResponse;
 import com.mypasswords7.gui.embeddedweb.response.InsertEntryResponse;
 import com.mypasswords7.gui.embeddedweb.response.ReadEntryResponse;
@@ -23,8 +25,12 @@ import com.mypasswords7.models.Tag;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.text.MessageFormat;
+import java.util.AbstractList;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
@@ -38,15 +44,18 @@ public class WebHandler implements HttpHandler {
   private static final int BUFFER_SIZE = 2048;
 
   private Engine engine;
+  private static final String DATABASES_DIR = "databases";
+  private static final String DEFAULT_PASSWORD = "123";
 
   public WebHandler() {
-    File home = new File(".");
-    try {
-      engine = new Engine(home, "123");
-      engine.init();
-    } catch (IOException ex) {
-      System.out.println("Error in initializing the ENGINE." + ex.getMessage());
-    }
+    /*
+     File home = new File(".");
+     try {
+     engine = new Engine(home, "123");
+     engine.init();
+     } catch (IOException ex) {
+     System.out.println("Error in initializing the ENGINE." + ex.getMessage());
+     }*/
   }
 
   @Override
@@ -70,6 +79,8 @@ public class WebHandler implements HttpHandler {
       tagsRequest(exchange);
     } else if (path.endsWith(".png") || path.endsWith(".gif") || path.endsWith(".jpg") || path.endsWith(".jpeg")) {
       loadImage(exchange);
+    } else if (requestURI.getPath().equalsIgnoreCase("/database")) {
+      databasesStatusRequest(exchange);
     } else {
       fourOFour(exchange);
     }
@@ -542,5 +553,97 @@ public class WebHandler implements HttpHandler {
       exchange.sendResponseHeaders(405, 0);
       exchange.getResponseBody().close();
     }
+  }
+
+  private void databasesStatusRequest(HttpExchange exchange) {
+    URI uri = exchange.getRequestURI();
+    String method = exchange.getRequestMethod();
+
+    if (method.equalsIgnoreCase("GET")) {
+      Headers responseHeaders = exchange.getResponseHeaders();
+      responseHeaders.set("Content-Type", "application/json");
+
+      try {
+        exchange.sendResponseHeaders(200, 0);
+      } catch (IOException ex) {
+        System.out.println("IOException during sending headers. " + ex.getMessage());
+      }
+
+      Gson gson = new Gson();
+      EnginesStatusResponse response = new EnginesStatusResponse(true);
+
+      try {
+        File home = new File("./" + DATABASES_DIR);
+
+        if (home.exists() && home.isDirectory()) {
+          File[] files = home.listFiles();
+
+          ArrayList<File> dbDirectories = new ArrayList<>();
+
+          for (File file : files) {
+            if (file.isDirectory()) {
+              File dbFile = new File(file, "database.sqlite");
+              if (dbFile.exists()) {
+                dbDirectories.add(file);
+              }
+            }
+          }
+
+          if (dbDirectories.size() > 0) {
+            List<EngineInfo> engineInfos = new ArrayList<>();
+            for (File dbDirectory : dbDirectories) {
+              EngineInfo engineInfo = new EngineInfo();
+              engineInfo.setEngineName(dbDirectory.getName());
+              engineInfos.add(engineInfo);
+            }
+
+            EngineInfo[] engines = new EngineInfo[engineInfos.size()];
+            engines = engineInfos.toArray(engines);
+            response.setEngines(engines);
+          } else {
+            createDefaultDatabase();
+            response.setSuccessMessage("Default database has been created. Password: " + DEFAULT_PASSWORD);
+          }
+        } else {
+          createDefaultDatabase();
+          response.setSuccessMessage("Default database has been created. Password: " + DEFAULT_PASSWORD);
+        }
+      } catch (IOException | SQLException | ClassNotFoundException ex) {
+        response.setSuccess(false);
+        response.setErrorMessage("Exception during checking databases. " + ex.getMessage());
+      }
+
+      String json = gson.toJson(response);
+      try {
+        exchange.getResponseBody().write(json.getBytes("UTF-8"));
+      } catch (IOException ex) {
+        System.out.println("IO Exception! " + ex.getMessage());
+      }
+    } else {
+      try {
+        exchange.sendResponseHeaders(405, 0);
+      } catch (IOException ex) {
+        System.out.println("IOException during sending headers. " + ex.getMessage());
+      }
+    }
+
+    try {
+      exchange.getResponseBody().close();
+    } catch (IOException ex) {
+      System.out.println("error " + ex.getMessage());
+    }
+  }
+
+  private void createDefaultDatabase() throws IOException, SQLException, ClassNotFoundException {
+    File defaultDatabase = new File(DATABASES_DIR + "/default");
+
+    if (!defaultDatabase.exists()) {
+      if (!defaultDatabase.mkdirs()) {
+        throw new IOException("Can not create default database directory: " + defaultDatabase.getAbsolutePath());
+      }
+    }
+
+    Engine engine1 = new Engine(defaultDatabase, DEFAULT_PASSWORD);
+    engine1.init();
   }
 }
