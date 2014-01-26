@@ -321,4 +321,34 @@ public class Dao {
 
     return result;
   }
+  
+  public void setSetting(Connection conn, String key, String value) throws SQLException {        
+    if (getSetting(conn, key) == null) {
+      String sql = "INSERT INTO SETTING (KEY, VALUE) VALUES (?, ?)";
+      PreparedStatement statement = conn.prepareStatement(sql);
+      statement.setString(1, key);
+      statement.setString(2, value);
+      statement.executeUpdate();
+    } else {
+      String sql = "UPDATE SETTING SET VALUE = ? WHERE KEY = ?";
+      PreparedStatement statement = conn.prepareStatement(sql);      
+      statement.setString(1, value);
+      statement.setString(2, key);
+      statement.executeUpdate();
+    }
+  }
+  
+  public String getSetting(Connection conn, String key) throws SQLException {
+    String sql = "SELECT VALUE FROM SETTING WHERE KEY = ?";
+    PreparedStatement statement = conn.prepareStatement(sql);
+    statement.setString(1, key);
+    
+    ResultSet resultSet = statement.executeQuery();
+    
+    if (resultSet.next()) {
+      return resultSet.getString("VALUE");
+    }
+    
+    return null;
+  }
 }

@@ -30,7 +30,7 @@ public class Engine {
   private static final String DATABASE_FILE_NAME = "database.sqlite";
   private File homeDir, database;
   private String password;
-  private String key;
+  private String masterKey;
 
   /**
    *
@@ -59,7 +59,7 @@ public class Engine {
     this.password = password;
   }
 
-  public void init() {
+  public void init() throws SQLException, ClassNotFoundException {
     logger.info("Initializing engine ...");
 
     if (!databaseExists()) {
@@ -69,6 +69,7 @@ public class Engine {
       } catch (SQLException | ClassNotFoundException ex) {
         logger.info("Error in creating tables.");
         logger.error(ex);
+        throw ex;
       }
     }
   }
@@ -103,6 +104,14 @@ public class Engine {
       sql = sql.concat("ENTRY_ID INTEGER NOT NULL,");
       sql = sql.concat("TAG_ID INTEGER NOT NULL, ");
       sql = sql.concat("PRIMARY KEY(ENTRY_ID, TAG_ID) ");
+      sql = sql.concat(")");
+
+      stmnt.executeUpdate(sql);
+
+      sql = "CREATE TABLE IF NOT EXISTS SETTING (";
+      sql = sql.concat("KEY TEXT NOY NULL UNIQUE,");
+      sql = sql.concat("VALUE TEXT,");
+      sql = sql.concat("PRIMARY KEY(KEY)");
       sql = sql.concat(")");
 
       stmnt.executeUpdate(sql);
@@ -196,42 +205,42 @@ public class Engine {
   }
 
   private Entry encrypt(Entry entry) throws NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, UnsupportedEncodingException, BadPaddingException {
-    if (key == null) {
-      key = CipherUtils.getKey(password);
+    if (masterKey == null) {
+      masterKey = CipherUtils.getKey(password);
     }
 
     if (entry.getUsername() != null) {
-      entry.setUsername(CipherUtils.encrypt(key, entry.getUsername()));
+      entry.setUsername(CipherUtils.encrypt(masterKey, entry.getUsername()));
     }
     if (entry.getPassword() != null) {
-      entry.setPassword(CipherUtils.encrypt(key, entry.getPassword()));
+      entry.setPassword(CipherUtils.encrypt(masterKey, entry.getPassword()));
     }
     if (entry.getIp() != null) {
-      entry.setIp(CipherUtils.encrypt(key, entry.getIp()));
+      entry.setIp(CipherUtils.encrypt(masterKey, entry.getIp()));
     }
     if (entry.getUrl() != null) {
-      entry.setUrl(CipherUtils.encrypt(key, entry.getUrl()));
+      entry.setUrl(CipherUtils.encrypt(masterKey, entry.getUrl()));
     }
 
     return entry;
   }
 
   private Entry decrypt(Entry entry) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOException {
-    if (key == null) {
-      key = CipherUtils.getKey(password);
+    if (masterKey == null) {
+      masterKey = CipherUtils.getKey(password);
     }
 
     if (entry.getUsername() != null) {
-      entry.setUsername(CipherUtils.decrypt(key, entry.getUsername()));
+      entry.setUsername(CipherUtils.decrypt(masterKey, entry.getUsername()));
     }
     if (entry.getPassword() != null) {
-      entry.setPassword(CipherUtils.decrypt(key, entry.getPassword()));
+      entry.setPassword(CipherUtils.decrypt(masterKey, entry.getPassword()));
     }
     if (entry.getIp() != null) {
-      entry.setIp(CipherUtils.decrypt(key, entry.getIp()));
+      entry.setIp(CipherUtils.decrypt(masterKey, entry.getIp()));
     }
     if (entry.getUrl() != null) {
-      entry.setUrl(CipherUtils.decrypt(key, entry.getUrl()));
+      entry.setUrl(CipherUtils.decrypt(masterKey, entry.getUrl()));
     }
 
     return entry;
@@ -261,38 +270,101 @@ public class Engine {
     try (Connection conn = Database.INSTANCE.getConnection(database)) {
       Dao dao = new Dao();
       List<Entry> result = dao.entries(conn);
-      
+
       for (Entry entry : result) {
         if (entry != null) {
           entry = decrypt(entry);
         }
       }
-      
+
       return result;
     }
   }
-  
+
   public List<Tag> tags() throws SQLException, ClassNotFoundException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOException {
     try (Connection conn = Database.INSTANCE.getConnection(database)) {
       Dao dao = new Dao();
       List<Tag> result = dao.tags(conn);
-            
+
       return result;
     }
   }
-  
+
   public List<Entry> search(String where, String order) throws SQLException, ClassNotFoundException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOException {
     try (Connection conn = Database.INSTANCE.getConnection(database)) {
       Dao dao = new Dao();
       List<Entry> result = dao.search(conn, where, order);
-      
+
       for (Entry entry : result) {
         if (entry != null) {
           entry = decrypt(entry);
         }
       }
-      
+
       return result;
+    }
+  }
+
+  public void setSetting(String key, String value) throws SQLException, ClassNotFoundException {
+    try (Connection conn = Database.INSTANCE.getConnection(database)) {
+      Dao dao = new Dao();
+      dao.setSetting(conn, key, value);
+    }
+  }
+  
+  public void setSetting(String key, Object value) throws SQLException, ClassNotFoundException {
+    try (Connection conn = Database.INSTANCE.getConnection(database)) {
+      Dao dao = new Dao();
+      dao.setSetting(conn, key, value.toString());
+    }
+  }
+
+  public String getSetting(String key) throws SQLException, ClassNotFoundException {
+    try (Connection conn = Database.INSTANCE.getConnection(database)) {
+      Dao dao = new Dao();
+      return dao.getSetting(conn, key);
+    }
+  }
+
+  public void setSettingEncrypted(String key, String value) throws SQLException, ClassNotFoundException, NoSuchAlgorithmException, UnsupportedEncodingException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+    try (Connection conn = Database.INSTANCE.getConnection(database)) {
+      Dao dao = new Dao();
+
+      if (masterKey == null) {
+        masterKey = CipherUtils.getKey(password);
+      }
+
+      String encryptedValue = CipherUtils.encrypt(masterKey, value);
+
+      dao.setSetting(conn, key, encryptedValue);
+    }
+  }
+
+  public String getSettingDecrypted(String key) throws SQLException, ClassNotFoundException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOException {
+    try (Connection conn = Database.INSTANCE.getConnection(database)) {
+      Dao dao = new Dao();
+      String value = dao.getSetting(conn, key);
+
+      if (value != null) {
+
+        if (masterKey == null) {
+          masterKey = CipherUtils.getKey(password);
+        }
+
+        return CipherUtils.decrypt(masterKey, value);
+      }
+
+      return null;
+    }
+  }
+
+  public void setSettingSHA256(String key, String value) throws SQLException, ClassNotFoundException, NoSuchAlgorithmException, UnsupportedEncodingException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+    try (Connection conn = Database.INSTANCE.getConnection(database)) {
+      Dao dao = new Dao();
+
+      String hashedValue = CipherUtils.SHA256(value);
+
+      dao.setSetting(conn, key, hashedValue);
     }
   }
 
@@ -306,5 +378,4 @@ public class Engine {
     System.out.println(entry.getPassword());
 
   }
-
 }
