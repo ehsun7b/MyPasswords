@@ -2,12 +2,14 @@ package com.mypasswords7.gui.embeddedweb;
 
 import com.google.gson.Gson;
 import com.mypasswords7.engine.Engine;
+import com.mypasswords7.engine.cipher.CipherUtils;
 import com.mypasswords7.gui.embeddedweb.response.CountResponse;
 import com.mypasswords7.gui.embeddedweb.response.DeleteEntryResponse;
 import com.mypasswords7.gui.embeddedweb.response.EngineInfo;
 import com.mypasswords7.gui.embeddedweb.response.EnginesStatusResponse;
 import com.mypasswords7.gui.embeddedweb.response.EntriesResponse;
 import com.mypasswords7.gui.embeddedweb.response.InsertEntryResponse;
+import com.mypasswords7.gui.embeddedweb.response.LoginResponse;
 import com.mypasswords7.gui.embeddedweb.response.ReadEntryResponse;
 import com.mypasswords7.gui.embeddedweb.response.Response;
 import com.mypasswords7.gui.embeddedweb.response.TagsResponse;
@@ -22,12 +24,13 @@ import java.net.URI;
 import java.sql.SQLException;
 import com.mypasswords7.models.Entry;
 import com.mypasswords7.models.Tag;
+import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.text.MessageFormat;
-import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -81,6 +84,8 @@ public class WebHandler implements HttpHandler {
       loadImage(exchange);
     } else if (requestURI.getPath().equalsIgnoreCase("/database")) {
       databasesStatusRequest(exchange);
+    } else if (requestURI.getPath().equalsIgnoreCase("/login")) {
+      loginRequest(exchange);
     } else {
       fourOFour(exchange);
     }
@@ -592,8 +597,7 @@ public class WebHandler implements HttpHandler {
           if (dbDirectories.size() > 0) {
             List<EngineInfo> engineInfos = new ArrayList<>();
             for (File dbDirectory : dbDirectories) {
-              EngineInfo engineInfo = new EngineInfo();
-              engineInfo.setEngineName(dbDirectory.getName());
+              EngineInfo engineInfo = new EngineInfo(dbDirectory.getName());              
               engineInfos.add(engineInfo);
             }
 
@@ -603,12 +607,15 @@ public class WebHandler implements HttpHandler {
           } else {
             createDefaultDatabase();
             response.setSuccessMessage("Default database has been created. Password: " + DEFAULT_PASSWORD);
+            response.setEngines(new EngineInfo[] {new EngineInfo("default")});
+            
           }
         } else {
           createDefaultDatabase();
           response.setSuccessMessage("Default database has been created. Password: " + DEFAULT_PASSWORD);
+          response.setEngines(new EngineInfo[] {new EngineInfo("default")});
         }
-      } catch (IOException | SQLException | ClassNotFoundException ex) {
+      } catch (IOException | SQLException | ClassNotFoundException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException ex) {
         response.setSuccess(false);
         response.setErrorMessage("Exception during checking databases. " + ex.getMessage());
       }
@@ -634,7 +641,7 @@ public class WebHandler implements HttpHandler {
     }
   }
 
-  private void createDefaultDatabase() throws IOException, SQLException, ClassNotFoundException {
+  private void createDefaultDatabase() throws IOException, SQLException, ClassNotFoundException, NoSuchAlgorithmException, UnsupportedEncodingException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
     File defaultDatabase = new File(DATABASES_DIR + "/default");
 
     if (!defaultDatabase.exists()) {
@@ -645,5 +652,69 @@ public class WebHandler implements HttpHandler {
 
     Engine engine1 = new Engine(defaultDatabase, DEFAULT_PASSWORD);
     engine1.init();
+    engine1.setSettingSHA256("password", DEFAULT_PASSWORD);
+  }
+
+  private void loginRequest(HttpExchange exchange) {
+    URI uri = exchange.getRequestURI();
+    String method = exchange.getRequestMethod();
+
+    if (method.equalsIgnoreCase("POST")) {
+      Headers responseHeaders = exchange.getResponseHeaders();
+      responseHeaders.set("Content-Type", "application/json");
+
+      try {
+        exchange.sendResponseHeaders(200, 0);
+      } catch (IOException ex) {
+        System.out.println("IOException during sending headers. " + ex.getMessage());
+      }
+
+      Gson gson = new Gson();
+      LoginResponse response = new LoginResponse(true);
+
+      StringBuilder request = new StringBuilder();
+      byte[] buffer = new byte[BUFFER_SIZE];
+      int len;
+      try (InputStream is = exchange.getRequestBody()) {
+        while ((len = is.read(buffer)) > 0) {
+          request.append(new String(buffer, 0, len, "UTF-8"));
+        }
+        
+        HashMap<String, String> requestMap = gson.fromJson(request.toString(), HashMap.class);
+        
+        engine = new Engine(DATABASES_DIR + "/" + requestMap.get("engine"), requestMap.get("password"));
+        engine.init();
+        String currentPassword = engine.getSetting("password");
+        if (currentPassword != null && currentPassword.equals(CipherUtils.SHA256(requestMap.get("password").trim()))) {
+          response.setLoginSuccess(true);          
+        } else {          
+          response.setLoginSuccess(false);
+          response.setLoginMessage("Wrong password!");          
+        }
+      } catch (Exception ex) {
+        response.setSuccess(false);
+        response.setErrorMessage("Error in reading request body. " + ex.getMessage());
+        engine = null;
+      }
+
+      String json = gson.toJson(response);
+      try {
+        exchange.getResponseBody().write(json.getBytes("UTF-8"));
+      } catch (IOException ex) {
+        System.out.println("IO Exception! " + ex.getMessage());
+      }
+    } else {
+      try {
+        exchange.sendResponseHeaders(405, 0);
+      } catch (IOException ex) {
+        System.out.println("IOException during sending headers. " + ex.getMessage());
+      }
+    }
+
+    try {
+      exchange.getResponseBody().close();
+    } catch (IOException ex) {
+      System.out.println("error " + ex.getMessage());
+    }
   }
 }

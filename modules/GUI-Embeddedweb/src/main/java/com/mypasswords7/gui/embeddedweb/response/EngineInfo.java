@@ -13,6 +13,10 @@ public class EngineInfo implements Serializable {
   private Date firstLogin;
   private Date lastLogin;
 
+  public EngineInfo(String name) {
+    engineName = name;
+  }
+
   public String getEngineName() {
     return engineName;
   }

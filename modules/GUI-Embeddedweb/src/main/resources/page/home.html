@@ -7,6 +7,7 @@
     <script type="text/javascript" src="jquery.js"></script>
     <script type="text/javascript" src="jquery-ui-1.10.4.custom.js"></script>
     <script type="text/javascript" src="main.js"></script>
+    <script type="text/javascript" src="utils.js"></script>
     <link rel="stylesheet" href="main.css"/>
     <link rel="stylesheet" href="jquery-ui-1.10.4.custom.css"/>
 
@@ -17,15 +18,15 @@
 
 
     <!-- dialogs -->
-    <div id="dlgEnginCheck" title="Checking Engines">
+    <div id="dlgEnginCheck" title="Checking Engines" style="display: none">
       Checking existing MyPasswords engines. Please wait ...
     </div>
 
-    <div id="dlgLogin" title="Sign In">
+    <div id="dlgLogin" title="Sign In" style="display: none">
       <form id="frmLogin">
         <table class="form">
           <tr>
-            <td class="caption"><label for="engine">Engine:</label></td>
+            <td class="caption"><label for="engine">Database:</label></td>
             <td class="data">
               <select id="engine" name="engine" class="ui-widget ui-state-default ui-corner-all"></select>
             </td>
@@ -43,6 +44,10 @@
           </tr>
         </table>
       </form>
+    </div>
+    
+    <div id="dlgMessageOk" title="Message" style="display: none">
+      <div id="message"></div>
     </div>
   </body>
 </html>
