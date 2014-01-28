@@ -30,10 +30,9 @@ import java.security.NoSuchAlgorithmException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
@@ -46,7 +45,8 @@ public class WebHandler implements HttpHandler {
 
   private static final int BUFFER_SIZE = 2048;
 
-  private Engine engine;
+  //private Engine engine;
+  private LoginProfile profile;
   private static final String DATABASES_DIR = "databases";
   private static final String DEFAULT_PASSWORD = "123";
 
@@ -199,7 +199,7 @@ public class WebHandler implements HttpHandler {
     }
   }
 
-  private void entryRequest(HttpExchange exchange) {
+  private void entryRequest(HttpExchange exchange) {    
     URI uri = exchange.getRequestURI();
     String method = exchange.getRequestMethod();
 
@@ -233,7 +233,7 @@ public class WebHandler implements HttpHandler {
         json = json.substring(json.indexOf("["), json.indexOf("]") + 1);
         Tag[] tags = gson.fromJson(json, Tag[].class);
 
-        entry = engine.insert(entry, tags);
+        entry = profile.getEngine().insert(entry, tags);
         if (entry.getId() > 0) {
           response.setSuccessMessage(MessageFormat.format("The entry {0} saved successfully. ID: {1}", entry.getTitle(), entry.getId()));
         } else {
@@ -259,8 +259,8 @@ public class WebHandler implements HttpHandler {
         int id = 0;
         try {
           id = Integer.parseInt(strId);
-          Entry entry = engine.load(id);
-          Tag[] tags = engine.loadTagsByEntryId(id);
+          Entry entry = profile.getEngine().load(id);
+          Tag[] tags = profile.getEngine().loadTagsByEntryId(id);
 
           ReadEntryResponse r = (ReadEntryResponse) response;
 
@@ -307,7 +307,7 @@ public class WebHandler implements HttpHandler {
           json = json.substring(json.indexOf("["), json.indexOf("]") + 1);
           Tag[] tags = gson.fromJson(json, Tag[].class);
 
-          entry = engine.update(entry, tags);
+          entry = profile.getEngine().update(entry, tags);
           if (entry.getId() > 0) {
             response.setSuccessMessage(MessageFormat.format("The entry {0} saved successfully. ID: {1}", entry.getTitle(), entry.getId()));
           } else {
@@ -337,7 +337,7 @@ public class WebHandler implements HttpHandler {
         int id = 0;
         try {
           id = Integer.parseInt(strId);
-          engine.delete(id);
+          profile.getEngine().delete(id);
           response.setSuccessMessage("Entry with ID " + id + " deleted successfully.");
         } catch (NumberFormatException ex) {
           response.setSuccess(false);
@@ -384,14 +384,14 @@ public class WebHandler implements HttpHandler {
 
       if (path.endsWith("entry")) {
         try {
-          response.setCount(engine.countOfEntries());
+          response.setCount(profile.getEngine().countOfEntries());
         } catch (SQLException | ClassNotFoundException ex) {
           response.setSuccess(false);
           response.setErrorMessage("SQL Exception. " + ex.getMessage());
         }
       } else if (path.endsWith("tag")) {
         try {
-          response.setCount(engine.countOfTags());
+          response.setCount(profile.getEngine().countOfTags());
         } catch (SQLException | ClassNotFoundException ex) {
           response.setSuccess(false);
           response.setErrorMessage("SQL Exception. " + ex.getMessage());
@@ -436,7 +436,7 @@ public class WebHandler implements HttpHandler {
       Gson gson = new Gson();
       EntriesResponse response = new EntriesResponse(true);
       try {
-        List<Entry> entries = engine.entries();
+        List<Entry> entries = profile.getEngine().entries();
         Entry[] arr = new Entry[entries.size()];
         arr = entries.toArray(arr);
         response.setEntries(arr);
@@ -483,7 +483,7 @@ public class WebHandler implements HttpHandler {
       Gson gson = new Gson();
       TagsResponse response = new TagsResponse(true);
       try {
-        List<Tag> tags = engine.tags();
+        List<Tag> tags = profile.getEngine().tags();
         Tag[] arr = new Tag[tags.size()];
         arr = tags.toArray(arr);
         response.setTags(arr);
@@ -682,11 +682,19 @@ public class WebHandler implements HttpHandler {
         
         HashMap<String, String> requestMap = gson.fromJson(request.toString(), HashMap.class);
         
-        engine = new Engine(DATABASES_DIR + "/" + requestMap.get("engine"), requestMap.get("password"));
+        Engine engine = new Engine(DATABASES_DIR + "/" + requestMap.get("engine"), requestMap.get("password"));
         engine.init();
         String currentPassword = engine.getSetting("password");
-        if (currentPassword != null && currentPassword.equals(CipherUtils.SHA256(requestMap.get("password").trim()))) {
-          response.setLoginSuccess(true);          
+        String hashedPassword = CipherUtils.SHA256(requestMap.get("password").trim());
+        if (currentPassword != null && currentPassword.equals(hashedPassword)) {
+          Date now = new Date();
+          profile.setPassword(requestMap.get("password").trim());          
+          profile = new LoginProfile();          
+          profile.setDate(now);
+          profile.genToken();
+          profile.setEngine(engine);
+          
+          response.setLoginSuccess(true);    
         } else {          
           response.setLoginSuccess(false);
           response.setLoginMessage("Wrong password!");          
@@ -694,7 +702,7 @@ public class WebHandler implements HttpHandler {
       } catch (Exception ex) {
         response.setSuccess(false);
         response.setErrorMessage("Error in reading request body. " + ex.getMessage());
-        engine = null;
+        profile = null;
       }
 
       String json = gson.toJson(response);
@@ -716,5 +724,5 @@ public class WebHandler implements HttpHandler {
     } catch (IOException ex) {
       System.out.println("error " + ex.getMessage());
     }
-  }
+  }  
 }
