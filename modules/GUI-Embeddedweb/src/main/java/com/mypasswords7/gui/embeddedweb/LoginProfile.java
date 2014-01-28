@@ -15,7 +15,7 @@ import java.util.Date;
 public class LoginProfile {
 
   static {
-    System.load("D:\\code\\MyPasswords\\modules\\dynamic-library\\win32\\GenerateToken\\dist\\Debug\\MinGW-Windows\\libGenerateToken.dll");
+    System.load("/home/ehsun7b/NetBeansProjects/MyPasswords/modules/dynamic-library/TokenGenerator/dist/Debug/GNU-Linux-x86/libTokenGenerator.so");
     /*
      try {
      System.loadLibrary("libGenerateToken");
