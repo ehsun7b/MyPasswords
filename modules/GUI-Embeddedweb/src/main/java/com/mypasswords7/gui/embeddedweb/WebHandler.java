@@ -33,6 +33,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
@@ -199,12 +201,12 @@ public class WebHandler implements HttpHandler {
     }
   }
 
-  private void entryRequest(HttpExchange exchange) {    
+  private void entryRequest(HttpExchange exchange) {
     URI uri = exchange.getRequestURI();
     String method = exchange.getRequestMethod();
 
     Headers responseHeaders = exchange.getResponseHeaders();
-    responseHeaders.set("Content-Type", "application/json");
+    responseHeaders.set("Content-Type", "application/json; charset=UTF-8");
     try {
       exchange.sendResponseHeaders(200, 0);
     } catch (IOException ex) {
@@ -369,40 +371,53 @@ public class WebHandler implements HttpHandler {
 
     if (method.equalsIgnoreCase("GET")) {
       Headers responseHeaders = exchange.getResponseHeaders();
-      responseHeaders.set("Content-Type", "application/json");
-
       try {
-        exchange.sendResponseHeaders(200, 0);
-      } catch (IOException ex) {
-        System.out.println("IOException during sending headers. " + ex.getMessage());
-      }
+        if (responseHeaders.containsKey("token") && profile != null && profile.validateToken(responseHeaders.containsKey("token"))) {
+          
+          responseHeaders.set("Content-Type", "application/json; charset=UTF-8");
+          
+          try {
+            exchange.sendResponseHeaders(200, 0);
+          } catch (IOException ex) {
+            System.out.println("IOException during sending headers. " + ex.getMessage());
+          }
 
-      Gson gson = new Gson();
-      CountResponse response = new CountResponse(true);
-
-      String path = uri.getPath();
-
-      if (path.endsWith("entry")) {
-        try {
-          response.setCount(profile.getEngine().countOfEntries());
-        } catch (SQLException | ClassNotFoundException ex) {
-          response.setSuccess(false);
-          response.setErrorMessage("SQL Exception. " + ex.getMessage());
+          Gson gson = new Gson();
+          CountResponse response = new CountResponse(true);
+          
+          String path = uri.getPath();
+          
+          if (path.endsWith("entry")) {
+            try {
+              response.setCount(profile.getEngine().countOfEntries());
+            } catch (SQLException | ClassNotFoundException ex) {
+              response.setSuccess(false);
+              response.setErrorMessage("SQL Exception. " + ex.getMessage());
+            }
+          } else if (path.endsWith("tag")) {
+            try {
+              response.setCount(profile.getEngine().countOfTags());
+            } catch (SQLException | ClassNotFoundException ex) {
+              response.setSuccess(false);
+              response.setErrorMessage("SQL Exception. " + ex.getMessage());
+            }
+          }
+          
+          String json = gson.toJson(response);
+          try {
+            exchange.getResponseBody().write(json.getBytes("UTF-8"));
+          } catch (IOException ex) {
+            System.out.println("IO Exception! " + ex.getMessage());
+          }
+        } else {
+          try {
+            exchange.sendResponseHeaders(403, 0);
+          } catch (IOException ex) {
+            System.out.println("IOException during sending headers. " + ex.getMessage());
+          }
         }
-      } else if (path.endsWith("tag")) {
-        try {
-          response.setCount(profile.getEngine().countOfTags());
-        } catch (SQLException | ClassNotFoundException ex) {
-          response.setSuccess(false);
-          response.setErrorMessage("SQL Exception. " + ex.getMessage());
-        }
-      }
-
-      String json = gson.toJson(response);
-      try {
-        exchange.getResponseBody().write(json.getBytes("UTF-8"));
-      } catch (IOException ex) {
-        System.out.println("IO Exception! " + ex.getMessage());
+      } catch (Exception ex) {
+        System.out.println("IOException during checking token. " + ex.getMessage());
       }
     } else {
       try {
@@ -425,7 +440,7 @@ public class WebHandler implements HttpHandler {
 
     if (method.equalsIgnoreCase("GET")) {
       Headers responseHeaders = exchange.getResponseHeaders();
-      responseHeaders.set("Content-Type", "application/json");
+      responseHeaders.set("Content-Type", "application/json; charset=UTF-8");
 
       try {
         exchange.sendResponseHeaders(200, 0);
@@ -472,7 +487,7 @@ public class WebHandler implements HttpHandler {
 
     if (method.equalsIgnoreCase("GET")) {
       Headers responseHeaders = exchange.getResponseHeaders();
-      responseHeaders.set("Content-Type", "application/json");
+      responseHeaders.set("Content-Type", "application/json; charset=UTF-8");
 
       try {
         exchange.sendResponseHeaders(200, 0);
@@ -561,12 +576,12 @@ public class WebHandler implements HttpHandler {
   }
 
   private void databasesStatusRequest(HttpExchange exchange) {
-    URI uri = exchange.getRequestURI();
+    //URI uri = exchange.getRequestURI();
     String method = exchange.getRequestMethod();
 
     if (method.equalsIgnoreCase("GET")) {
       Headers responseHeaders = exchange.getResponseHeaders();
-      responseHeaders.set("Content-Type", "application/json");
+      responseHeaders.set("Content-Type", "application/json; charset=UTF-8");
 
       try {
         exchange.sendResponseHeaders(200, 0);
@@ -597,7 +612,7 @@ public class WebHandler implements HttpHandler {
           if (dbDirectories.size() > 0) {
             List<EngineInfo> engineInfos = new ArrayList<>();
             for (File dbDirectory : dbDirectories) {
-              EngineInfo engineInfo = new EngineInfo(dbDirectory.getName());              
+              EngineInfo engineInfo = new EngineInfo(dbDirectory.getName());
               engineInfos.add(engineInfo);
             }
 
@@ -607,13 +622,13 @@ public class WebHandler implements HttpHandler {
           } else {
             createDefaultDatabase();
             response.setSuccessMessage("Default database has been created. Password: " + DEFAULT_PASSWORD);
-            response.setEngines(new EngineInfo[] {new EngineInfo("default")});
-            
+            response.setEngines(new EngineInfo[]{new EngineInfo("default")});
+
           }
         } else {
           createDefaultDatabase();
           response.setSuccessMessage("Default database has been created. Password: " + DEFAULT_PASSWORD);
-          response.setEngines(new EngineInfo[] {new EngineInfo("default")});
+          response.setEngines(new EngineInfo[]{new EngineInfo("default")});
         }
       } catch (IOException | SQLException | ClassNotFoundException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException ex) {
         response.setSuccess(false);
@@ -661,13 +676,7 @@ public class WebHandler implements HttpHandler {
 
     if (method.equalsIgnoreCase("POST")) {
       Headers responseHeaders = exchange.getResponseHeaders();
-      responseHeaders.set("Content-Type", "application/json");
-
-      try {
-        exchange.sendResponseHeaders(200, 0);
-      } catch (IOException ex) {
-        System.out.println("IOException during sending headers. " + ex.getMessage());
-      }
+      responseHeaders.set("Content-Type", "application/json; charset=UTF-8");
 
       Gson gson = new Gson();
       LoginResponse response = new LoginResponse(true);
@@ -679,9 +688,9 @@ public class WebHandler implements HttpHandler {
         while ((len = is.read(buffer)) > 0) {
           request.append(new String(buffer, 0, len, "UTF-8"));
         }
-        
+
         HashMap<String, String> requestMap = gson.fromJson(request.toString(), HashMap.class);
-        
+
         Engine engine = new Engine(DATABASES_DIR + "/" + requestMap.get("engine"), requestMap.get("password"));
         engine.init();
         String currentPassword = engine.getSetting("password");
@@ -691,19 +700,31 @@ public class WebHandler implements HttpHandler {
           Date now = new Date();
           profile = new LoginProfile();
           profile.setDate(now);
-          profile.setPassword(enteredPassword);                    
+          profile.setPassword(enteredPassword);
           profile.genToken();
           profile.setEngine(engine);
-          
-          response.setLoginSuccess(true);    
-        } else {          
+
+          if (profile.getToken() != null) {
+            responseHeaders.set("token", profile.getToken());
+            response.setLoginSuccess(true);
+          } else {
+            response.setErrorMessage("Token generation failed.");
+            response.setSuccess(false);
+          }
+        } else {
           response.setLoginSuccess(false);
-          response.setLoginMessage("Wrong password!");          
+          response.setLoginMessage("Wrong password!");
         }
       } catch (Exception ex) {
         response.setSuccess(false);
         response.setErrorMessage("Error in reading request body. " + ex.getMessage());
         profile = null;
+      }
+
+      try {
+        exchange.sendResponseHeaders(200, 0);
+      } catch (IOException ex) {
+        System.out.println("IOException during sending headers. " + ex.getMessage());
       }
 
       String json = gson.toJson(response);
@@ -725,5 +746,5 @@ public class WebHandler implements HttpHandler {
     } catch (IOException ex) {
       System.out.println("error " + ex.getMessage());
     }
-  }  
+  }
 }

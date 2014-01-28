@@ -1,5 +1,6 @@
 package com.mypasswords7.gui.embeddedweb;
 
+import com.mkyong.core.OSValidator;
 import com.mypasswords7.engine.Engine;
 import com.mypasswords7.engine.cipher.CipherUtils;
 import cz.adamh.utils.NativeUtils;
@@ -16,10 +17,14 @@ public class LoginProfile {
   static {
     //System.load("<PROJECTS_ROOT>\\HelloWorldNative\\dist\\HelloWorldNative.dll");    
     try {
-      System.loadLibrary("libGenerateToken.dll");
+      System.loadLibrary("libGenerateToken");
     } catch (UnsatisfiedLinkError e) {
       try {
-        NativeUtils.loadLibraryFromJar("/lib/libGenerateToken.dll"); // during runtime. .DLL within .JAR
+        if (OSValidator.isWindows()) {
+          NativeUtils.loadLibraryFromJar("/lib/libGenerateToken.dll");
+        } else if (OSValidator.isUnix()) {
+          NativeUtils.loadLibraryFromJar("/lib/libGenerateToken.so");
+        }
       } catch (IOException e1) {
         throw new RuntimeException(e1);
       }
@@ -64,6 +69,16 @@ public class LoginProfile {
       String timeStamp = CipherUtils.SHA256(date.getTime() + "");
       String pass = CipherUtils.SHA256(password);
       token = nativeGenToken(pass, timeStamp);
+    } else {
+      throw new Exception("Password / Date is null.");
+    }
+  }
+
+  boolean validateToken(boolean containsKey) throws NoSuchAlgorithmException, Exception {
+    if (password != null && date != null) {
+      String timeStamp = CipherUtils.SHA256(date.getTime() + "");
+      String pass = CipherUtils.SHA256(password);
+      return nativeCheckToken(token, pass, timeStamp) == 1;
     } else {
       throw new Exception("Password / Date is null.");
     }
