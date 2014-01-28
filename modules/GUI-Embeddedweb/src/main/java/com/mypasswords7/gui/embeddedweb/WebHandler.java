@@ -371,11 +371,12 @@ public class WebHandler implements HttpHandler {
 
     if (method.equalsIgnoreCase("GET")) {
       Headers responseHeaders = exchange.getResponseHeaders();
+      Headers requestHeaders = exchange.getRequestHeaders();
       try {
-        if (responseHeaders.containsKey("token") && profile != null && profile.validateToken(responseHeaders.containsKey("token"))) {
-          
+        if (requestHeaders.containsKey("token") && profile != null && profile.validateToken(requestHeaders.getFirst("token"))) {
+
           responseHeaders.set("Content-Type", "application/json; charset=UTF-8");
-          
+
           try {
             exchange.sendResponseHeaders(200, 0);
           } catch (IOException ex) {
@@ -384,9 +385,9 @@ public class WebHandler implements HttpHandler {
 
           Gson gson = new Gson();
           CountResponse response = new CountResponse(true);
-          
+
           String path = uri.getPath();
-          
+
           if (path.endsWith("entry")) {
             try {
               response.setCount(profile.getEngine().countOfEntries());
@@ -402,7 +403,7 @@ public class WebHandler implements HttpHandler {
               response.setErrorMessage("SQL Exception. " + ex.getMessage());
             }
           }
-          
+
           String json = gson.toJson(response);
           try {
             exchange.getResponseBody().write(json.getBytes("UTF-8"));
@@ -435,36 +436,49 @@ public class WebHandler implements HttpHandler {
   }
 
   private void entriesRequest(HttpExchange exchange) {
-    URI uri = exchange.getRequestURI();
+    //URI uri = exchange.getRequestURI();
     String method = exchange.getRequestMethod();
 
     if (method.equalsIgnoreCase("GET")) {
       Headers responseHeaders = exchange.getResponseHeaders();
-      responseHeaders.set("Content-Type", "application/json; charset=UTF-8");
-
       try {
-        exchange.sendResponseHeaders(200, 0);
-      } catch (IOException ex) {
-        System.out.println("IOException during sending headers. " + ex.getMessage());
-      }
+        if (responseHeaders.containsKey("token") && profile != null && profile.validateToken(responseHeaders.getFirst("token"))) {
 
-      Gson gson = new Gson();
-      EntriesResponse response = new EntriesResponse(true);
-      try {
-        List<Entry> entries = profile.getEngine().entries();
-        Entry[] arr = new Entry[entries.size()];
-        arr = entries.toArray(arr);
-        response.setEntries(arr);
-      } catch (SQLException | ClassNotFoundException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException | IOException ex) {
-        response.setSuccess(false);
-        response.setErrorMessage("Exception during read all entries. " + ex.getMessage());
-      }
+          responseHeaders.set("Content-Type", "application/json; charset=UTF-8");
 
-      String json = gson.toJson(response);
-      try {
-        exchange.getResponseBody().write(json.getBytes("UTF-8"));
-      } catch (IOException ex) {
-        System.out.println("IO Exception! " + ex.getMessage());
+          try {
+            exchange.sendResponseHeaders(200, 0);
+          } catch (IOException ex) {
+            System.out.println("IOException during sending headers. " + ex.getMessage());
+          }
+
+          Gson gson = new Gson();
+          EntriesResponse response = new EntriesResponse(true);
+          try {
+            List<Entry> entries = profile.getEngine().entries();
+            Entry[] arr = new Entry[entries.size()];
+            arr = entries.toArray(arr);
+            response.setEntries(arr);
+          } catch (SQLException | ClassNotFoundException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException | IOException ex) {
+            response.setSuccess(false);
+            response.setErrorMessage("Exception during read all entries. " + ex.getMessage());
+          }
+
+          String json = gson.toJson(response);
+          try {
+            exchange.getResponseBody().write(json.getBytes("UTF-8"));
+          } catch (IOException ex) {
+            System.out.println("IO Exception! " + ex.getMessage());
+          }
+        } else {
+          try {
+            exchange.sendResponseHeaders(403, 0);
+          } catch (IOException ex) {
+            System.out.println("IOException during sending headers. " + ex.getMessage());
+          }
+        }
+      } catch (Exception ex) {
+        System.out.println("IOException during checking token. " + ex.getMessage());
       }
     } else {
       try {
@@ -576,7 +590,7 @@ public class WebHandler implements HttpHandler {
   }
 
   private void databasesStatusRequest(HttpExchange exchange) {
-    //URI uri = exchange.getRequestURI();
+    URI uri = exchange.getRequestURI();
     String method = exchange.getRequestMethod();
 
     if (method.equalsIgnoreCase("GET")) {

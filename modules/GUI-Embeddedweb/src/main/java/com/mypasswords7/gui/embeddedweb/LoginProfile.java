@@ -15,20 +15,21 @@ import java.util.Date;
 public class LoginProfile {
 
   static {
-    //System.load("<PROJECTS_ROOT>\\HelloWorldNative\\dist\\HelloWorldNative.dll");    
-    try {
-      System.loadLibrary("libGenerateToken");
-    } catch (UnsatisfiedLinkError e) {
-      try {
-        if (OSValidator.isWindows()) {
-          NativeUtils.loadLibraryFromJar("/lib/libGenerateToken.dll");
-        } else if (OSValidator.isUnix()) {
-          NativeUtils.loadLibraryFromJar("/lib/libGenerateToken.so");
-        }
-      } catch (IOException e1) {
-        throw new RuntimeException(e1);
-      }
-    }
+    System.load("D:\\code\\MyPasswords\\modules\\dynamic-library\\win32\\GenerateToken\\dist\\Debug\\MinGW-Windows\\libGenerateToken.dll");
+    /*
+     try {
+     System.loadLibrary("libGenerateToken");
+     } catch (UnsatisfiedLinkError e) {
+     try {
+     if (OSValidator.isWindows()) {
+     NativeUtils.loadLibraryFromJar("/lib/libGenerateToken.dll");
+     } else if (OSValidator.isUnix()) {
+     NativeUtils.loadLibraryFromJar("/lib/libGenerateToken.so");
+     }
+     } catch (IOException e1) {
+     throw new RuntimeException(e1);
+     }
+     }*/
   }
 
   private String token;
@@ -74,11 +75,13 @@ public class LoginProfile {
     }
   }
 
-  boolean validateToken(boolean containsKey) throws NoSuchAlgorithmException, Exception {
+  public boolean validateToken(String tok) throws NoSuchAlgorithmException, Exception {
     if (password != null && date != null) {
-      String timeStamp = CipherUtils.SHA256(date.getTime() + "");
-      String pass = CipherUtils.SHA256(password);
-      return nativeCheckToken(token, pass, timeStamp) == 1;
+      //String timeStamp = CipherUtils.SHA256(date.getTime() + "");
+      //String pass = CipherUtils.SHA256(password);
+      //return nativeCheckToken(token, pass, timeStamp) == 1;
+
+      return token.equalsIgnoreCase(tok);
     } else {
       throw new Exception("Password / Date is null.");
     }
@@ -92,15 +95,21 @@ public class LoginProfile {
     LoginProfile loginProfile = new LoginProfile();
     String password = "123";
     String timestamp = "4566";
-    String pass = CipherUtils.SHA256(password);
-    String time = CipherUtils.SHA256(timestamp);
+
     //System.out.println(pass.length() + " " + time.length());
     //System.out.println(pass);
     //System.out.println(time);
-    String token = loginProfile.nativeGenToken(pass, time);
+    for (int i = 0; i < 100; i++) {
 
-    System.out.println(token);
-    int check = loginProfile.nativeCheckToken("23", pass, time);
-    System.out.println(check);
+      String pass = CipherUtils.SHA256(password);
+      String time = CipherUtils.SHA256(timestamp);
+      
+      String token = loginProfile.nativeGenToken(pass, time);
+           
+      
+      System.out.println(token);
+    }
+    //int check = loginProfile.nativeCheckToken("23", pass, time);
+    //System.out.println(check);
   }
 }
