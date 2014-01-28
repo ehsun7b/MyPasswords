@@ -4,29 +4,27 @@
 #include <string.h>
 #include "TokenGen.h"
 
-char* genToken(const char password[30], const char timestamp[30]) {
-    char* temp = malloc(61);
-    
-    if (strlen(password) < 30 || strlen(timestamp) < 30) {
-        printf("Invalid length of password/timestamp.");
-    }
-    
-    int i;
-    for (i = 0; i < 30; ++i) {
-        if (i % 2 == 0) {
-            temp[i] = password[i];
-        } else {
-            temp[i] = timestamp[i];
-        }
-    }
+char* genToken(const char a[30], const char b[30]) {
+  if (strlen(a) < 30 || strlen(b) < 30) {
+    return "";
+  }
 
-    temp[60] = '\0';
+  char *result = malloc(61);
+  result[60] = '\0';
 
-    char* charResult = malloc(15);
-    charResult = memcpy(charResult, &temp[3], 17);
-    charResult[15] = '\0';
-    
-    return charResult;
+
+  int i, j;
+
+  for (j = 0, i = 0; i < 30; ++i, j += 2) {
+
+    result[j] = a[i];
+  }
+
+  for (j = 1, i = 0; i < 30; ++i, j += 2) {
+    result[j] = b[i];
+  }
+
+  return result;
 }
 
 JNIEXPORT jint JNICALL Java_com_mypasswords7_gui_embeddedweb_LoginProfile_nativeCheckToken
@@ -45,7 +43,7 @@ JNIEXPORT jint JNICALL Java_com_mypasswords7_gui_embeddedweb_LoginProfile_native
     return result;
 }
 
-/*
+
 JNIEXPORT jstring JNICALL Java_com_mypasswords7_gui_embeddedweb_LoginProfile_nativeGenToken
 (JNIEnv *env, jobject obj, jstring jpassword, jstring jtimestamp) {
 
@@ -57,11 +55,11 @@ JNIEXPORT jstring JNICALL Java_com_mypasswords7_gui_embeddedweb_LoginProfile_nat
     
     const char* charResult = genToken(password, timestamp);
 
-    jstring result = (*env)->NewStringUTF(env, charResult); // C style string to Java String 
-    (*env)->DeleteLocalRef(env, obj);
+    jstring result = (*env)->NewStringUTF(env, charResult);     
     return result;
-}*/
+}
 
+/*
 JNIEXPORT jstring JNICALL Java_com_mypasswords7_gui_embeddedweb_LoginProfile_nativeGenToken
 (JNIEnv *env, jobject obj, jstring jpassword, jstring jtimestamp) {
 
@@ -74,4 +72,4 @@ JNIEXPORT jstring JNICALL Java_com_mypasswords7_gui_embeddedweb_LoginProfile_nat
     jstring result = (*env)->NewStringUTF(env, res); // C style string to Java String     
   
     return result;
-}
+}*/
