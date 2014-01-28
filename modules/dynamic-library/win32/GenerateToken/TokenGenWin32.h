@@ -15,6 +15,14 @@ extern "C" {
 JNIEXPORT jstring JNICALL Java_com_mypasswords7_gui_embeddedweb_LoginProfile_nativeGenToken
   (JNIEnv *, jobject, jstring, jstring);
 
+/*
+ * Class:     com_mypasswords7_gui_embeddedweb_LoginProfile
+ * Method:    nativeCheckToken
+ * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I
+ */
+JNIEXPORT jint JNICALL Java_com_mypasswords7_gui_embeddedweb_LoginProfile_nativeCheckToken
+  (JNIEnv *, jobject, jstring, jstring, jstring);
+
 #ifdef __cplusplus
 }
 #endif

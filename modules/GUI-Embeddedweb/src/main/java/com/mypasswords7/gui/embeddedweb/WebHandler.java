@@ -685,12 +685,13 @@ public class WebHandler implements HttpHandler {
         Engine engine = new Engine(DATABASES_DIR + "/" + requestMap.get("engine"), requestMap.get("password"));
         engine.init();
         String currentPassword = engine.getSetting("password");
-        String hashedPassword = CipherUtils.SHA256(requestMap.get("password").trim());
+        String enteredPassword = requestMap.get("password").trim();
+        String hashedPassword = CipherUtils.SHA256(enteredPassword);
         if (currentPassword != null && currentPassword.equals(hashedPassword)) {
           Date now = new Date();
-          profile.setPassword(requestMap.get("password").trim());          
-          profile = new LoginProfile();          
+          profile = new LoginProfile();
           profile.setDate(now);
+          profile.setPassword(enteredPassword);                    
           profile.genToken();
           profile.setEngine(engine);
           
