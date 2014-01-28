@@ -1,0 +1,2 @@
+mingw compile options
+-Wl,--add-stdcall-alias -shared -m32
