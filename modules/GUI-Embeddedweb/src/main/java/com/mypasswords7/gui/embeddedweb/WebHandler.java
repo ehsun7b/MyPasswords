@@ -47,20 +47,12 @@ public class WebHandler implements HttpHandler {
 
   private static final int BUFFER_SIZE = 2048;
 
-  //private Engine engine;
   private LoginProfile profile;
   private static final String DATABASES_DIR = "databases";
   private static final String DEFAULT_PASSWORD = "123";
 
   public WebHandler() {
-    /*
-     File home = new File(".");
-     try {
-     engine = new Engine(home, "123");
-     engine.init();
-     } catch (IOException ex) {
-     System.out.println("Error in initializing the ENGINE." + ex.getMessage());
-     }*/
+
   }
 
   @Override
@@ -91,25 +83,6 @@ public class WebHandler implements HttpHandler {
     } else {
       fourOFour(exchange);
     }
-
-    /*
-     if (requestMethod.equalsIgnoreCase("GET")) {
-     Headers responseHeaders = exchange.getResponseHeaders();
-     responseHeaders.set("Content-Type", "text/plain");
-     exchange.sendResponseHeaders(200, 0);
-     try (OutputStream responseBody = exchange.getResponseBody()) {
-     Headers requestHeaders = exchange.getRequestHeaders();
-     Set<String> keySet = requestHeaders.keySet();
-     Iterator<String> iter = keySet.iterator();
-     while (iter.hasNext()) {
-     String key = iter.next();
-     List values = requestHeaders.get(key);
-     String s = key + " = " + values.toString() + "\n";
-     responseBody.write(s.getBytes());
-     }
-     responseBody.write("requestURI: ".concat(requestURI.getPath()).getBytes("UTF-8"));
-     }
-     }*/
   }
 
   private void responseHome(HttpExchange exchange) throws IOException {
@@ -207,11 +180,6 @@ public class WebHandler implements HttpHandler {
 
     Headers responseHeaders = exchange.getResponseHeaders();
     responseHeaders.set("Content-Type", "application/json; charset=UTF-8");
-    try {
-      exchange.sendResponseHeaders(200, 0);
-    } catch (IOException ex) {
-      System.out.println("IOException during sending headers. " + ex.getMessage());
-    }
 
     Gson gson = new Gson();
     Response response = null;
@@ -219,135 +187,229 @@ public class WebHandler implements HttpHandler {
     if (method.equalsIgnoreCase("POST")) {
       response = new InsertEntryResponse(true);
 
-      try (InputStream is = exchange.getRequestBody()) {
-        StringBuilder builder = new StringBuilder();
-        byte[] buffer = new byte[BUFFER_SIZE];
-        int len;
+      Headers requestHeaders = exchange.getRequestHeaders();
+      try {
+        if (requestHeaders.containsKey("token") && profile != null && profile.validateToken(requestHeaders.getFirst("token"))) {
 
-        while ((len = is.read(buffer)) > 0) {
-          buffer = Arrays.copyOf(buffer, len);
-          builder.append(new String(buffer, "UTF-8"));
-        }
+          profile.genToken();
+          responseHeaders.set("Content-Type", "application/json; charset=UTF-8");
+          responseHeaders.set("token", profile.getToken());
 
-        String json = builder.toString();
-        Entry entry = gson.fromJson(json, Entry.class);
+          try {
+            exchange.sendResponseHeaders(200, 0);
+          } catch (IOException ex) {
+            System.out.println("IOException during sending headers. " + ex.getMessage());
+          }
 
-        json = json.substring(json.indexOf("["), json.indexOf("]") + 1);
-        Tag[] tags = gson.fromJson(json, Tag[].class);
+          try (InputStream is = exchange.getRequestBody()) {
+            StringBuilder builder = new StringBuilder();
+            byte[] buffer = new byte[BUFFER_SIZE];
+            int len;
 
-        entry = profile.getEngine().insert(entry, tags);
-        if (entry.getId() > 0) {
-          response.setSuccessMessage(MessageFormat.format("The entry {0} saved successfully. ID: {1}", entry.getTitle(), entry.getId()));
+            while ((len = is.read(buffer)) > 0) {
+              buffer = Arrays.copyOf(buffer, len);
+              builder.append(new String(buffer, "UTF-8"));
+            }
+
+            String json = builder.toString();
+            Entry entry = gson.fromJson(json, Entry.class);
+
+            json = json.substring(json.indexOf("["), json.indexOf("]") + 1);
+            Tag[] tags = gson.fromJson(json, Tag[].class);
+
+            entry = profile.getEngine().insert(entry, tags);
+            if (entry.getId() > 0) {
+              response.setSuccessMessage(MessageFormat.format("The entry {0} saved successfully. ID: {1}", entry.getTitle(), entry.getId()));
+            } else {
+              response.setSuccess(false);
+              response.setErrorMessage(MessageFormat.format("The entry {0} was NOT saved.", entry.getTitle()));
+            }
+          } catch (IOException ex) {
+            response.setSuccess(false);
+            response.setErrorMessage("IO Exception in reading request content. " + ex.getMessage());
+          } catch (Exception ex) {
+            response.setSuccess(false);
+            response.setErrorMessage("Exception in parsing request content into JSON. " + ex.getMessage());
+          }
+
         } else {
-          response.setSuccess(false);
-          response.setErrorMessage(MessageFormat.format("The entry {0} was NOT saved.", entry.getTitle()));
+          try {
+            exchange.sendResponseHeaders(403, 0);
+          } catch (IOException ex) {
+            System.out.println("IOException during sending headers. " + ex.getMessage());
+          }
         }
-      } catch (IOException ex) {
-        response.setSuccess(false);
-        response.setErrorMessage("IO Exception in reading request content. " + ex.getMessage());
       } catch (Exception ex) {
-        response.setSuccess(false);
-        response.setErrorMessage("Exception in parsing request content into JSON. " + ex.getMessage());
+        System.out.println("IOException during checking token. " + ex.getMessage());
       }
     } else if (method.equalsIgnoreCase("GET")) {
+      Headers requestHeaders = exchange.getRequestHeaders();
       response = new ReadEntryResponse(true);
+      try {
+        if (requestHeaders.containsKey("token") && profile != null && profile.validateToken(requestHeaders.getFirst("token"))) {
 
-      String path = uri.getPath();
-      int lastIndexOfSlash = path.lastIndexOf("/");
-      if (lastIndexOfSlash > 0 && lastIndexOfSlash < path.length() - 1) {
-        String strId = path.substring(lastIndexOfSlash + 1);
-        System.out.println("READ ENTRY ID: " + strId);
+          profile.genToken();
+          responseHeaders.set("Content-Type", "application/json; charset=UTF-8");
+          responseHeaders.set("token", profile.getToken());
 
-        int id = 0;
-        try {
-          id = Integer.parseInt(strId);
-          Entry entry = profile.getEngine().load(id);
-          Tag[] tags = profile.getEngine().loadTagsByEntryId(id);
+          try {
+            exchange.sendResponseHeaders(200, 0);
+          } catch (IOException ex) {
+            System.out.println("IOException during sending headers. " + ex.getMessage());
+          }
 
-          ReadEntryResponse r = (ReadEntryResponse) response;
+          String path = uri.getPath();
+          int lastIndexOfSlash = path.lastIndexOf("/");
+          if (lastIndexOfSlash > 0 && lastIndexOfSlash < path.length() - 1) {
+            String strId = path.substring(lastIndexOfSlash + 1);
+            System.out.println("READ ENTRY ID: " + strId);
 
-          r.setEntry(entry);
-          r.setTags(tags);
-        } catch (NumberFormatException ex) {
-          response.setSuccess(false);
-          response.setErrorMessage("Invalid ID " + strId);
-        } catch (SQLException | ClassNotFoundException ex) {
-          response.setSuccess(false);
-          response.setErrorMessage("Engine Exception " + ex.getMessage());
-        } catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException | IOException ex) {
-          response.setSuccess(false);
-          response.setErrorMessage("Engine Exception " + ex.getMessage());
+            int id = 0;
+            try {
+              id = Integer.parseInt(strId);
+              Entry entry = profile.getEngine().load(id);
+              Tag[] tags = profile.getEngine().loadTagsByEntryId(id);
+
+              ReadEntryResponse r = (ReadEntryResponse) response;
+
+              r.setEntry(entry);
+              r.setTags(tags);
+            } catch (NumberFormatException ex) {
+              response.setSuccess(false);
+              response.setErrorMessage("Invalid ID " + strId);
+            } catch (SQLException | ClassNotFoundException ex) {
+              response.setSuccess(false);
+              response.setErrorMessage("Engine Exception " + ex.getMessage());
+            } catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException | IOException ex) {
+              response.setSuccess(false);
+              response.setErrorMessage("Engine Exception " + ex.getMessage());
+            }
+          }
+        } else {
+          try {
+            exchange.sendResponseHeaders(403, 0);
+          } catch (IOException ex) {
+            System.out.println("IOException during sending headers. " + ex.getMessage());
+          }
         }
+      } catch (Exception ex) {
+        System.out.println("IOException during checking token. " + ex.getMessage());
       }
     } else if (method.equalsIgnoreCase("PUT")) {
       response = new InsertEntryResponse(true);
+      Headers requestHeaders = exchange.getRequestHeaders();
+      try {
+        if (requestHeaders.containsKey("token") && profile != null && profile.validateToken(requestHeaders.getFirst("token"))) {
 
-      String path = uri.getPath();
-      int lastIndexOfSlash = path.lastIndexOf("/");
-      if (lastIndexOfSlash > 0 && lastIndexOfSlash < path.length() - 1) {
-        String strId = path.substring(lastIndexOfSlash + 1);
-        System.out.println("UPDATE ENTRY ID: " + strId);
+          profile.genToken();
+          responseHeaders.set("Content-Type", "application/json; charset=UTF-8");
+          responseHeaders.set("token", profile.getToken());
 
-        int id = 0;
+          try {
+            exchange.sendResponseHeaders(200, 0);
+          } catch (IOException ex) {
+            System.out.println("IOException during sending headers. " + ex.getMessage());
+          }          
 
-        id = Integer.parseInt(strId);
+          String path = uri.getPath();
+          int lastIndexOfSlash = path.lastIndexOf("/");
+          if (lastIndexOfSlash > 0 && lastIndexOfSlash < path.length() - 1) {
+            String strId = path.substring(lastIndexOfSlash + 1);
+            System.out.println("UPDATE ENTRY ID: " + strId);
 
-        try (InputStream is = exchange.getRequestBody()) {
-          StringBuilder builder = new StringBuilder();
-          byte[] buffer = new byte[BUFFER_SIZE];
-          int len;
+            int id = 0;
 
-          while ((len = is.read(buffer)) > 0) {
-            buffer = Arrays.copyOf(buffer, len);
-            builder.append(new String(buffer, "UTF-8"));
+            id = Integer.parseInt(strId);
+
+            try (InputStream is = exchange.getRequestBody()) {
+              StringBuilder builder = new StringBuilder();
+              byte[] buffer = new byte[BUFFER_SIZE];
+              int len;
+
+              while ((len = is.read(buffer)) > 0) {
+                buffer = Arrays.copyOf(buffer, len);
+                builder.append(new String(buffer, "UTF-8"));
+              }
+
+              String json = builder.toString();
+              Entry entry = gson.fromJson(json, Entry.class);
+              entry.setId(id);
+
+              json = json.substring(json.indexOf("["), json.indexOf("]") + 1);
+              Tag[] tags = gson.fromJson(json, Tag[].class);
+
+              entry = profile.getEngine().update(entry, tags);
+              if (entry.getId() > 0) {
+                response.setSuccessMessage(MessageFormat.format("The entry {0} saved successfully. ID: {1}", entry.getTitle(), entry.getId()));
+              } else {
+                response.setSuccess(false);
+                response.setErrorMessage(MessageFormat.format("The entry {0} was NOT saved.", entry.getTitle()));
+              }
+            } catch (NumberFormatException ex) {
+              response.setSuccess(false);
+              response.setErrorMessage("Invalid ID " + strId);
+            } catch (IOException ex) {
+              response.setSuccess(false);
+              response.setErrorMessage("IO Exception in reading request content. " + ex.getMessage());
+            } catch (Exception ex) {
+              response.setSuccess(false);
+              response.setErrorMessage("Exception in parsing request content into JSON. " + ex.getMessage());
+            }
           }
-
-          String json = builder.toString();
-          Entry entry = gson.fromJson(json, Entry.class);
-          entry.setId(id);
-
-          json = json.substring(json.indexOf("["), json.indexOf("]") + 1);
-          Tag[] tags = gson.fromJson(json, Tag[].class);
-
-          entry = profile.getEngine().update(entry, tags);
-          if (entry.getId() > 0) {
-            response.setSuccessMessage(MessageFormat.format("The entry {0} saved successfully. ID: {1}", entry.getTitle(), entry.getId()));
-          } else {
-            response.setSuccess(false);
-            response.setErrorMessage(MessageFormat.format("The entry {0} was NOT saved.", entry.getTitle()));
+        } else {
+          try {
+            exchange.sendResponseHeaders(403, 0);
+          } catch (IOException ex) {
+            System.out.println("IOException during sending headers. " + ex.getMessage());
           }
-        } catch (NumberFormatException ex) {
-          response.setSuccess(false);
-          response.setErrorMessage("Invalid ID " + strId);
-        } catch (IOException ex) {
-          response.setSuccess(false);
-          response.setErrorMessage("IO Exception in reading request content. " + ex.getMessage());
-        } catch (Exception ex) {
-          response.setSuccess(false);
-          response.setErrorMessage("Exception in parsing request content into JSON. " + ex.getMessage());
         }
+      } catch (Exception ex) {
+        System.out.println("IOException during checking token. " + ex.getMessage());
       }
     } else if (method.equalsIgnoreCase("DELETE")) {
       response = new DeleteEntryResponse(true);
+      Headers requestHeaders = exchange.getRequestHeaders();
+      try {
+        if (requestHeaders.containsKey("token") && profile != null && profile.validateToken(requestHeaders.getFirst("token"))) {
 
-      String path = uri.getPath();
-      int lastIndexOfSlash = path.lastIndexOf("/");
-      if (lastIndexOfSlash > 0 && lastIndexOfSlash < path.length() - 1) {
-        String strId = path.substring(lastIndexOfSlash + 1);
-        System.out.println("DELETE ENTRY ID: " + strId);
+          profile.genToken();
+          responseHeaders.set("Content-Type", "application/json; charset=UTF-8");
+          responseHeaders.set("token", profile.getToken());
 
-        int id = 0;
-        try {
-          id = Integer.parseInt(strId);
-          profile.getEngine().delete(id);
-          response.setSuccessMessage("Entry with ID " + id + " deleted successfully.");
-        } catch (NumberFormatException ex) {
-          response.setSuccess(false);
-          response.setErrorMessage("Invalid ID " + strId);
-        } catch (SQLException | ClassNotFoundException ex) {
-          response.setSuccess(false);
-          response.setErrorMessage("Engine Exception " + ex.getMessage());
+          try {
+            exchange.sendResponseHeaders(200, 0);
+          } catch (IOException ex) {
+            System.out.println("IOException during sending headers. " + ex.getMessage());
+          }          
+
+          String path = uri.getPath();
+          int lastIndexOfSlash = path.lastIndexOf("/");
+          if (lastIndexOfSlash > 0 && lastIndexOfSlash < path.length() - 1) {
+            String strId = path.substring(lastIndexOfSlash + 1);
+            System.out.println("DELETE ENTRY ID: " + strId);
+
+            int id = 0;
+            try {
+              id = Integer.parseInt(strId);
+              profile.getEngine().delete(id);
+              response.setSuccessMessage("Entry with ID " + id + " deleted successfully.");
+            } catch (NumberFormatException ex) {
+              response.setSuccess(false);
+              response.setErrorMessage("Invalid ID " + strId);
+            } catch (SQLException | ClassNotFoundException ex) {
+              response.setSuccess(false);
+              response.setErrorMessage("Engine Exception " + ex.getMessage());
+            }
+          }
+        } else {
+          try {
+            exchange.sendResponseHeaders(403, 0);
+          } catch (IOException ex) {
+            System.out.println("IOException during sending headers. " + ex.getMessage());
+          }
         }
+      } catch (Exception ex) {
+        System.out.println("IOException during checking token. " + ex.getMessage());
       }
     }
 
@@ -375,7 +437,9 @@ public class WebHandler implements HttpHandler {
       try {
         if (requestHeaders.containsKey("token") && profile != null && profile.validateToken(requestHeaders.getFirst("token"))) {
 
+          profile.genToken();
           responseHeaders.set("Content-Type", "application/json; charset=UTF-8");
+          responseHeaders.set("token", profile.getToken());
 
           try {
             exchange.sendResponseHeaders(200, 0);
@@ -711,9 +775,7 @@ public class WebHandler implements HttpHandler {
         String enteredPassword = requestMap.get("password").trim();
         String hashedPassword = CipherUtils.SHA256(enteredPassword);
         if (currentPassword != null && currentPassword.equals(hashedPassword)) {
-          Date now = new Date();
           profile = new LoginProfile();
-          profile.setDate(now);
           profile.setPassword(enteredPassword);
           profile.genToken();
           profile.setEngine(engine);

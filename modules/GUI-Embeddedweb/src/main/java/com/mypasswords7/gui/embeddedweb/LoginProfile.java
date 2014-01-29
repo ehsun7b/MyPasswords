@@ -66,10 +66,11 @@ public class LoginProfile {
   }
 
   public void genToken() throws Exception {
-    if (password != null && date != null) {
+    if (password != null) {
+      date = new Date();
       String timeStamp = CipherUtils.SHA256(date.getTime() + "");
       String pass = CipherUtils.SHA256(password);
-      token = nativeGenToken(pass, timeStamp);
+      token = CipherUtils.SHA256(nativeGenToken(pass, timeStamp));
     } else {
       throw new Exception("Password / Date is null.");
     }
