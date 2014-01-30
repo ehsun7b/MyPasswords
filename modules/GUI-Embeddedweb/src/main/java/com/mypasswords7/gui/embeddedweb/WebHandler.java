@@ -30,11 +30,8 @@ import java.security.NoSuchAlgorithmException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
@@ -309,7 +306,7 @@ public class WebHandler implements HttpHandler {
             exchange.sendResponseHeaders(200, 0);
           } catch (IOException ex) {
             System.out.println("IOException during sending headers. " + ex.getMessage());
-          }          
+          }
 
           String path = uri.getPath();
           int lastIndexOfSlash = path.lastIndexOf("/");
@@ -380,7 +377,7 @@ public class WebHandler implements HttpHandler {
             exchange.sendResponseHeaders(200, 0);
           } catch (IOException ex) {
             System.out.println("IOException during sending headers. " + ex.getMessage());
-          }          
+          }
 
           String path = uri.getPath();
           int lastIndexOfSlash = path.lastIndexOf("/");
@@ -505,10 +502,13 @@ public class WebHandler implements HttpHandler {
 
     if (method.equalsIgnoreCase("GET")) {
       Headers responseHeaders = exchange.getResponseHeaders();
+      Headers requestHeaders = exchange.getRequestHeaders();
       try {
-        if (responseHeaders.containsKey("token") && profile != null && profile.validateToken(responseHeaders.getFirst("token"))) {
+        if (responseHeaders.containsKey("token") && profile != null && profile.validateToken(requestHeaders.getFirst("token"))) {
 
           responseHeaders.set("Content-Type", "application/json; charset=UTF-8");
+          profile.genToken();
+          responseHeaders.set("token", profile.getToken());
 
           try {
             exchange.sendResponseHeaders(200, 0);
@@ -560,29 +560,47 @@ public class WebHandler implements HttpHandler {
   }
 
   private void tagsRequest(HttpExchange exchange) {
-    URI uri = exchange.getRequestURI();
+    //URI uri = exchange.getRequestURI();
     String method = exchange.getRequestMethod();
+
+    Gson gson = new Gson();
+    TagsResponse response = new TagsResponse(true);
 
     if (method.equalsIgnoreCase("GET")) {
       Headers responseHeaders = exchange.getResponseHeaders();
-      responseHeaders.set("Content-Type", "application/json; charset=UTF-8");
-
+      Headers requestHeaders = exchange.getRequestHeaders();
       try {
-        exchange.sendResponseHeaders(200, 0);
-      } catch (IOException ex) {
-        System.out.println("IOException during sending headers. " + ex.getMessage());
-      }
+        if (responseHeaders.containsKey("token") && profile != null && profile.validateToken(requestHeaders.getFirst("token"))) {
 
-      Gson gson = new Gson();
-      TagsResponse response = new TagsResponse(true);
-      try {
-        List<Tag> tags = profile.getEngine().tags();
-        Tag[] arr = new Tag[tags.size()];
-        arr = tags.toArray(arr);
-        response.setTags(arr);
-      } catch (SQLException | ClassNotFoundException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException | IOException ex) {
-        response.setSuccess(false);
-        response.setErrorMessage("Exception during read all entries. " + ex.getMessage());
+          responseHeaders.set("Content-Type", "application/json; charset=UTF-8");
+          profile.genToken();
+          responseHeaders.set("token", profile.getToken());
+
+          try {
+            exchange.sendResponseHeaders(200, 0);
+          } catch (IOException ex) {
+            System.out.println("IOException during sending headers. " + ex.getMessage());
+          }
+
+          try {
+            List<Tag> tags = profile.getEngine().tags();
+            Tag[] arr = new Tag[tags.size()];
+            arr = tags.toArray(arr);
+            response.setTags(arr);
+          } catch (SQLException | ClassNotFoundException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException | IOException ex) {
+            response.setSuccess(false);
+            response.setErrorMessage("Exception during read all entries. " + ex.getMessage());
+          }
+
+        } else {
+          try {
+            exchange.sendResponseHeaders(403, 0);
+          } catch (IOException ex) {
+            System.out.println("IOException during sending headers. " + ex.getMessage());
+          }
+        }
+      } catch (Exception ex) {
+        System.out.println("IOException during checking token. " + ex.getMessage());
       }
 
       String json = gson.toJson(response);
