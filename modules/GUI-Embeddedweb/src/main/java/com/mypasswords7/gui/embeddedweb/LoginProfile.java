@@ -15,21 +15,22 @@ import java.util.Date;
 public class LoginProfile {
 
   static {
-    System.load("/home/ehsun7b/NetBeansProjects/MyPasswords/modules/dynamic-library/TokenGenerator/dist/Debug/GNU-Linux-x86/libTokenGenerator.so");
-    /*
-     try {
-     System.loadLibrary("libGenerateToken");
-     } catch (UnsatisfiedLinkError e) {
-     try {
-     if (OSValidator.isWindows()) {
-     NativeUtils.loadLibraryFromJar("/lib/libGenerateToken.dll");
-     } else if (OSValidator.isUnix()) {
-     NativeUtils.loadLibraryFromJar("/lib/libGenerateToken.so");
-     }
-     } catch (IOException e1) {
-     throw new RuntimeException(e1);
-     }
-     }*/
+    //System.load("/home/ehsun7b/NetBeansProjects/MyPasswords/modules/dynamic-library/TokenGenerator/dist/Debug/GNU-Linux-x86/libTokenGenerator.so");
+    //System.load("D:\\code\\MyPasswords\\modules\\dynamic-library\\TokenGenerator\\dist\\Debug\\MinGW-Windows\\libTokenGenerator.dll");    
+
+    try {
+      System.loadLibrary("libTokenGenerator.dll");
+    } catch (UnsatisfiedLinkError e) {
+      try {
+        if (OSValidator.isWindows()) {
+          NativeUtils.loadLibraryFromJar("/lib/libTokenGenerator.dll");
+        } else if (OSValidator.isUnix()) {
+          NativeUtils.loadLibraryFromJar("/lib/libTokenGenerator.so");
+        }
+      } catch (IOException e1) {
+        throw new RuntimeException(e1);
+      }
+    }
   }
 
   private String token;
@@ -104,10 +105,9 @@ public class LoginProfile {
 
       String pass = CipherUtils.SHA256(password);
       String time = CipherUtils.SHA256(timestamp);
-      
+
       String token = loginProfile.nativeGenToken(pass, time);
-           
-      
+
       System.out.println(token);
     }
     //int check = loginProfile.nativeCheckToken("23", pass, time);
