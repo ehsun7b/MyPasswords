@@ -13,8 +13,17 @@
 
   </head>
   <body>
-    <h1>MyPasswords 3.0</h1>
-    <div>Home</div>
+    <div id="container">
+      <div id="status">
+        <span id="loggedInEngine"></span>
+        <span id="logout"><a href="#" title="Sign Out">Change</a></span>
+      </div>
+      <div id="mypasswords">MyPasswords 3.0</div>
+      <div id="toolbar">
+        <span class="toolbarButton" id="btnNew">New Entry</span>
+      </div>
+      <div id="content">Home</div>
+    </div>
 
 
     <!-- dialogs -->
@@ -42,12 +51,78 @@
               <input type="submit" class="ui-button ui-widget ui-state-default ui-corner-all ui-state-focus" value="Sign In"/>
             </td>
           </tr>
+          <tr>
+            <td colspan="2">
+              <div id="loginBoard"></div>
+            </td>
+          </tr>
         </table>
       </form>
     </div>
-    
+
     <div id="dlgMessageOk" title="Message" style="display: none">
       <div id="message"></div>
     </div>
+
+    <div id="dlgNewEntry" title="New Entry" style="display: none">
+      <form id="frmNewEntry" class="frmEntry">
+        <table class="form">
+          <tr>
+            <td class="caption"><label for="entTitle">Title:</label></td>
+            <td class="data">
+              <input type="text" required name="entTitle" id="entTitle"/>
+            </td>
+          </tr>
+          <tr>
+            <td class="caption"><label for="entDescription">Description:</label></td>
+            <td class="data">
+              <input type="text" name="entDescription" id="entDescription"/>
+            </td>
+          </tr>
+          <tr>
+            <td class="caption"><label for="entUsername">Username:</label></td>
+            <td class="data">
+              <input type="text" name="entUsername" id="entUsername"/>
+            </td>
+          </tr>
+          <tr>
+            <td class="caption"><label for="entPassword">Password:</label></td>
+            <td class="data">
+              <input type="password" name="entPassword" id="entPassword"/>
+            </td>
+          </tr>
+          <tr>
+            <td class="caption"><label for="entURL">URL:</label></td>
+            <td class="data">
+              <input type="url" name="entURL" id="entURL"/>
+            </td>
+          </tr>
+          <tr>
+            <td class="caption"><label for="entIP">IP Address:</label></td>
+            <td class="data">
+              <input type="text" name="entIP" id="entIP"/>
+            </td>
+          </tr>
+          <tr>
+            <td class="caption"><label for="entNote">Note:</label></td>
+            <td class="data">
+              <textarea name="entNote" id="entNote"></textarea>
+            </td>
+          </tr>
+          <tr>
+            <td class="buttons" colspan="2">
+              <input type="reset" class="button" value="Clear"/>
+              <input type="submit" class="button" value="Save"/>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2">
+
+            </td>
+          </tr>
+        </table>
+      </form>
+    </div>
+
   </body>
 </html>
