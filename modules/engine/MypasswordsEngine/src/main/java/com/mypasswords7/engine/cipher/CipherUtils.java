@@ -98,6 +98,6 @@ public class CipherUtils {
       password = SHA256(password);
     }
     
-    return password.substring(0, 32);
+    return password.substring(0, 16);
   }
 }

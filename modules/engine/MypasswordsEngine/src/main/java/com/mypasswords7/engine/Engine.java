@@ -209,16 +209,16 @@ public class Engine {
       masterKey = CipherUtils.getKey(password);
     }
 
-    if (entry.getUsername() != null) {
+    if (entry.getUsername() != null /*&& entry.getUsername().length() > 0*/) {
       entry.setUsername(CipherUtils.encrypt(masterKey, entry.getUsername()));
     }
-    if (entry.getPassword() != null) {
+    if (entry.getPassword() != null /*&& entry.getPassword().length() > 0*/) {
       entry.setPassword(CipherUtils.encrypt(masterKey, entry.getPassword()));
     }
-    if (entry.getIp() != null) {
+    if (entry.getIp() != null /*&& entry.getIp().length() > 0*/) {
       entry.setIp(CipherUtils.encrypt(masterKey, entry.getIp()));
     }
-    if (entry.getUrl() != null) {
+    if (entry.getUrl() != null /*&& entry.getUrl().length() > 0*/) {
       entry.setUrl(CipherUtils.encrypt(masterKey, entry.getUrl()));
     }
 
@@ -230,16 +230,16 @@ public class Engine {
       masterKey = CipherUtils.getKey(password);
     }
 
-    if (entry.getUsername() != null) {
+    if (entry.getUsername() != null /*&& entry.getUsername().length() > 0*/) {
       entry.setUsername(CipherUtils.decrypt(masterKey, entry.getUsername()));
     }
-    if (entry.getPassword() != null) {
+    if (entry.getPassword() != null /*&& entry.getPassword().length() > 0*/) {
       entry.setPassword(CipherUtils.decrypt(masterKey, entry.getPassword()));
     }
-    if (entry.getIp() != null) {
+    if (entry.getIp() != null /*&& entry.getIp().length() > 0*/) {
       entry.setIp(CipherUtils.decrypt(masterKey, entry.getIp()));
     }
-    if (entry.getUrl() != null) {
+    if (entry.getUrl() != null /*&& entry.getUrl().length() > 0*/) {
       entry.setUrl(CipherUtils.decrypt(masterKey, entry.getUrl()));
     }
 
