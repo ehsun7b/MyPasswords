@@ -20,9 +20,11 @@
       </div>
       <div id="mypasswords">MyPasswords 3.0</div>
       <div id="toolbar">
-        <span class="toolbarButton" id="btnNew">New Entry</span>
+        <input type="button" class="button" id="btnNew" value="New Entry"/>
+        &nbsp;
+        <input type="button" class="button" id="btnSearch" value="Search"/>
       </div>
-      <div id="content">Home</div>
+      <div id="content"></div>
     </div>
 
 
@@ -65,48 +67,55 @@
     </div>
 
     <div id="dlgNewEntry" title="New Entry" style="display: none">
+      <h2>New Entry</h2>
       <form id="frmNewEntry" class="frmEntry">
         <table class="form">
           <tr>
             <td class="caption"><label for="entTitle">Title:</label></td>
             <td class="data">
-              <input type="text" required name="entTitle" id="entTitle"/>
+              <input type="text" autocomplete="off" required name="entTitle" id="entTitle"/>
             </td>
           </tr>
           <tr>
             <td class="caption"><label for="entDescription">Description:</label></td>
             <td class="data">
-              <input type="text" name="entDescription" id="entDescription"/>
+              <input type="text" autocomplete="off" name="entDescription" id="entDescription"/>
             </td>
           </tr>
           <tr>
             <td class="caption"><label for="entUsername">Username:</label></td>
             <td class="data">
-              <input type="text" name="entUsername" id="entUsername"/>
+              <input type="text" autocomplete="off" name="entUsername" id="entUsername"/>
             </td>
           </tr>
           <tr>
             <td class="caption"><label for="entPassword">Password:</label></td>
             <td class="data">
-              <input type="password" name="entPassword" id="entPassword"/>
+              <input type="password" autocomplete="off" name="entPassword" id="entPassword"/>
             </td>
           </tr>
           <tr>
             <td class="caption"><label for="entURL">URL:</label></td>
             <td class="data">
-              <input type="url" name="entURL" id="entURL"/>
+              <input type="url" autocomplete="off" name="entURL" id="entURL"/>
             </td>
           </tr>
           <tr>
             <td class="caption"><label for="entIP">IP Address:</label></td>
             <td class="data">
-              <input type="text" name="entIP" id="entIP"/>
+              <input type="text" autocomplete="off" name="entIP" id="entIP"/>
             </td>
           </tr>
           <tr>
             <td class="caption"><label for="entNote">Note:</label></td>
             <td class="data">
               <textarea name="entNote" id="entNote"></textarea>
+            </td>
+          </tr>
+          <tr>
+            <td class="caption"><label for="entTags">Tags:</label></td>
+            <td class="data">
+              <input type="text" name="entTags" autocomplete="off" id="entTags"/>
             </td>
           </tr>
           <tr>
@@ -117,11 +126,16 @@
           </tr>
           <tr>
             <td colspan="2">
-
+              <div id="entryBoard"></div>
             </td>
           </tr>
         </table>
       </form>
+    </div>
+
+    <div id="dlgSearch" title="Search" style="display: none">
+      <h2>Search</h2>
+      <form id="frmSearch" class="frmSearch"></form>
     </div>
 
   </body>

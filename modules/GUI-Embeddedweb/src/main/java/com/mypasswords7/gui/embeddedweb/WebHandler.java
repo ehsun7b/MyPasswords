@@ -211,8 +211,11 @@ public class WebHandler implements HttpHandler {
             String json = builder.toString();
             Entry entry = gson.fromJson(json, Entry.class);
 
-            json = json.substring(json.indexOf("["), json.indexOf("]") + 1);
-            Tag[] tags = gson.fromJson(json, Tag[].class);
+            Tag[] tags = new Tag[0];
+            if (json.indexOf("[") > 0) {
+              json = json.substring(json.indexOf("["), json.indexOf("]") + 1);
+              tags = gson.fromJson(json, Tag[].class);
+            }
 
             entry = profile.getEngine().insert(entry, tags);
             if (entry.getId() > 0) {
@@ -332,8 +335,11 @@ public class WebHandler implements HttpHandler {
               Entry entry = gson.fromJson(json, Entry.class);
               entry.setId(id);
 
-              json = json.substring(json.indexOf("["), json.indexOf("]") + 1);
-              Tag[] tags = gson.fromJson(json, Tag[].class);
+              Tag[] tags = new Tag[0];
+              if (json.indexOf("[") > 0)  {
+                json = json.substring(json.indexOf("["), json.indexOf("]") + 1);
+                tags = gson.fromJson(json, Tag[].class);
+              }
 
               entry = profile.getEngine().update(entry, tags);
               if (entry.getId() > 0) {
@@ -504,7 +510,7 @@ public class WebHandler implements HttpHandler {
       Headers responseHeaders = exchange.getResponseHeaders();
       Headers requestHeaders = exchange.getRequestHeaders();
       try {
-        if (responseHeaders.containsKey("token") && profile != null && profile.validateToken(requestHeaders.getFirst("token"))) {
+        if (requestHeaders.containsKey("token") && profile != null && profile.validateToken(requestHeaders.getFirst("token"))) {
 
           responseHeaders.set("Content-Type", "application/json; charset=UTF-8");
           profile.genToken();
@@ -570,7 +576,7 @@ public class WebHandler implements HttpHandler {
       Headers responseHeaders = exchange.getResponseHeaders();
       Headers requestHeaders = exchange.getRequestHeaders();
       try {
-        if (responseHeaders.containsKey("token") && profile != null && profile.validateToken(requestHeaders.getFirst("token"))) {
+        if (requestHeaders.containsKey("token") && profile != null && profile.validateToken(requestHeaders.getFirst("token"))) {
 
           responseHeaders.set("Content-Type", "application/json; charset=UTF-8");
           profile.genToken();

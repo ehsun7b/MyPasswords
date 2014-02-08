@@ -38,7 +38,7 @@ table.form td.buttons {
     color: white;
 }
 
-span.toolbarButton, .button {
+.button {
     display: inline-block;    
     cursor: default;
     padding: 4px;
@@ -46,10 +46,11 @@ span.toolbarButton, .button {
     background-color: #74b2e2;
     box-shadow: 1px 1px 1px #aaa;
     border: none;
+    min-width: 70px;
 }
 
-.button {
-    min-width: 70px;
+#toolbar .button {
+  font-size: 10px;
 }
 
 .button:focus {

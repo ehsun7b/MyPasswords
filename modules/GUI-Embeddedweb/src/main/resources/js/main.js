@@ -1,4 +1,5 @@
 var loggedIn = false;
+var allTags = [];
 
 $(function() {
   $("#container").hide();
@@ -72,16 +73,18 @@ function sendLogin() {
   $.ajax({
     url: "/login",
     type: "POST",
-    contentType: 'application/json',
+    contentType: "application/json",
     data: JSON.stringify(reqData),
     success: function(data, textStatus, jqXHR) {
       if (data.success) {
         if (data.loginSuccess) {
-          loggedIn = true;
+          loggedIn = jqXHR.getResponseHeader("token");          
           $("#loggedInEngine").html("Database: " + reqData.engine);
           $("#loginBoard").html("").attr("class", "");          
           $("#dlgLogin").dialog('close');
           $("#container").show();
+          reloadTags();
+          showSearch();          
         } else {
           $("#loginBoard").html(data.loginMessage).attr("class", "warning");
         }
@@ -102,9 +105,24 @@ function setEventHandlers() {
   });
   
   // new entry button
-  $("span#btnNew").click(function() {
+  $("input#btnNew").click(function() {
     showNewEntry();
   });
+  
+  // search button
+  $("input#btnSearch").click(function() {
+    showSearch();
+  });
+}
+
+function showSearch() {
+  var content = $("div#content");
+  var dialog = $("div#dlgSearch");
+  content.html(dialog.clone().attr("id", "dlgSearchInstance").show());
+  /*$("#dlgNewEntryInstance form#frmNewEntry").submit(function(){
+    sendNewEntry();
+    return false;
+  });*/
 }
 
 function showNewEntry() {
@@ -115,6 +133,7 @@ function showNewEntry() {
     sendNewEntry();
     return false;
   });
+  $("#dlgNewEntryInstance form#frmNewEntry input#entTitle").focus();
 }
 
 function sendNewEntry() {
@@ -125,29 +144,67 @@ function sendNewEntry() {
   var url = $("#entURL").val();
   var ip = $("#entIP").val();
   var note = $("#entNote").val();
+  var tags = $("#entTags").val().trim();
+  
   var reqData = {
     "title": title, "username": username, "password": password, "description": description,
     "url": url, "ip": ip, "note": note
   };
+
+  if (tags.length > 0) {
+    var tempTags = tags.split(',');
+    reqData.tags = [];
+    var len = tempTags.length;
+    for (var i = 0; i < len; ++i) {
+      var tag = {"title": tempTags[i]};
+      reqData.tags.push(tag);
+    }
+  }
+  
+  //console.log(reqData);
 
   $.ajax({
     url: "/entry",
     type: "POST",
     contentType: 'application/json',
     data: JSON.stringify(reqData),
+    beforeSend: function(xhr) {
+      xhr.setRequestHeader("token", loggedIn);
+    },
     success: function(data, textStatus, jqXHR) {
+      var token = jqXHR.getResponseHeader("token");
+      if (token !== null && token !== undefined) {
+        loggedIn = token;
+      }
+      
       if (data.success) {
-        if (data.loginSuccess) {
-          loggedIn = true;
-          $("#loggedInEngine").html("Database: " + reqData.engine);
-          $("#loginBoard").html("").attr("class", "");          
-          $("#dlgLogin").dialog('close');
-          $("#container").show();
-        } else {
-          $("#loginBoard").html(data.loginMessage).attr("class", "warning");
-        }
+        $("#entryBoard").html(data.successMessage).attr("class", "info");
       } else {
-        $("#loginBoard").html(data.errorMessage).attr("class", "error");        
+        $("#entryBoard").html(data.errorMessage).attr("class", "error");        
+      }
+    }
+  }).done(function() {
+    
+  });
+}
+
+function reloadTags() {
+  $.ajax({
+    url: "/tags",
+    type: "GET",        
+    beforeSend: function(xhr) {
+      xhr.setRequestHeader("token", loggedIn);
+    },
+    success: function(data, textStatus, jqXHR) {
+      var token = jqXHR.getResponseHeader("token");
+      if (token !== null && token !== undefined) {
+        loggedIn = token;
+      }
+      
+      if (data.success) {
+        console.log(data);
+      } else {
+        alert(data.errorMessage);
       }
     }
   }).done(function() {

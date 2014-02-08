@@ -2,7 +2,6 @@ package com.mypasswords7.gui.embeddedweb;
 
 import com.sun.net.httpserver.HttpServer;
 import java.awt.Desktop;
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.concurrent.Executors;
@@ -29,7 +28,7 @@ public class MyPasswords {
       try {
         openWebpage(new URI("http://localhost:6265"));
       } catch (Exception ex) {
-        System.out.println("Error in opening default browser. " + ex.getMessage());
+        System.out.println("Warning: Can not open default browser. " /*+ ex.getMessage()*/);
       }
     } catch (Exception ex) {
       System.out.println("Error: " + ex.getMessage());
