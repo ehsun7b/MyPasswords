@@ -73,3 +73,7 @@ form.frmEntry input[type=text], form.frmEntry input[type=password], form.frmEntr
 form.frmEntry textArea {
     height: 100px;
 }
+
+input:invalid {
+  background-color: red;
+}

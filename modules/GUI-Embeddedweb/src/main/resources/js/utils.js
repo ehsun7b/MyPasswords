@@ -16,3 +16,29 @@ function showMessageOk(title, msg, okCallBack) {
     }
   });
 }
+
+function tagExists(tags, tag) {
+  var result = false;
+  
+  if ($.isArray(tags)) {
+    var len = tags.length;
+    for (var i = 0; i < len; ++i) {
+      var cTag = tags[i];
+      
+      if (cTag.title == tag.title) {
+        result = true;
+        break;
+      }
+    }
+  }
+  
+  return result;
+}
+
+function checkPassword(input, passwordInputId) {
+    if (input.value != $("#" + passwordInputId).value) {
+        input.setCustomValidity('The two passwords must match.');
+    } else {        
+        input.setCustomValidity('');
+   }
+}

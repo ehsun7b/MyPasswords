@@ -95,6 +95,12 @@
             </td>
           </tr>
           <tr>
+            <td class="caption"><label for="entConPassword">Confirm Password:</label></td>
+            <td class="data">
+              <input type="password" oninput="checkPassword(this, 'entPassword')" autocomplete="off" name="entConPassword" id="entConPassword"/>
+            </td>
+          </tr>
+          <tr>
             <td class="caption"><label for="entURL">URL:</label></td>
             <td class="data">
               <input type="url" autocomplete="off" name="entURL" id="entURL"/>
@@ -103,7 +109,7 @@
           <tr>
             <td class="caption"><label for="entIP">IP Address:</label></td>
             <td class="data">
-              <input type="text" autocomplete="off" name="entIP" id="entIP"/>
+              <input type="text" autocomplete="off" pattern="((^|\.)((25[0-5])|(2[0-4]\d)|(1\d\d)|([1-9]?\d))){4}$" name="entIP" id="entIP"/>
             </td>
           </tr>
           <tr>

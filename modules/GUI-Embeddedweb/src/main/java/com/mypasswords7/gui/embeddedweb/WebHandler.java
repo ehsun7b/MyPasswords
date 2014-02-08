@@ -219,6 +219,7 @@ public class WebHandler implements HttpHandler {
 
             entry = profile.getEngine().insert(entry, tags);
             if (entry.getId() > 0) {
+              ((InsertEntryResponse)response).setId(entry.getId());
               response.setSuccessMessage(MessageFormat.format("The entry {0} saved successfully. ID: {1}", entry.getTitle(), entry.getId()));
             } else {
               response.setSuccess(false);
