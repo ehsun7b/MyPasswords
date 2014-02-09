@@ -74,6 +74,18 @@ form.frmEntry textArea {
     height: 100px;
 }
 
-input:invalid {
-  background-color: red;
+form.frmEntry input:focus {
+  outline: none;
+}
+
+form.frmEntry input:invalid {
+  border-color: #ff0000;
+}
+
+h2.new {
+  color: blue;
+}
+
+h2.update {
+  color: green;
 }

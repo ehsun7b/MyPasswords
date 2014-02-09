@@ -12,6 +12,7 @@ import com.mypasswords7.gui.embeddedweb.response.InsertEntryResponse;
 import com.mypasswords7.gui.embeddedweb.response.LoginResponse;
 import com.mypasswords7.gui.embeddedweb.response.ReadEntryResponse;
 import com.mypasswords7.gui.embeddedweb.response.Response;
+import com.mypasswords7.gui.embeddedweb.response.SearchResponse;
 import com.mypasswords7.gui.embeddedweb.response.TagsResponse;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
@@ -76,7 +77,9 @@ public class WebHandler implements HttpHandler {
     } else if (requestURI.getPath().equalsIgnoreCase("/database")) {
       databasesStatusRequest(exchange);
     } else if (requestURI.getPath().equalsIgnoreCase("/login")) {
-      loginRequest(exchange);
+      loginRequest(exchange);      
+    } else if (requestURI.getPath().startsWith("/search")) {
+      searchRequest(exchange);
     } else {
       fourOFour(exchange);
     }
@@ -471,6 +474,65 @@ public class WebHandler implements HttpHandler {
               response.setErrorMessage("SQL Exception. " + ex.getMessage());
             }
           }
+
+          String json = gson.toJson(response);
+          try {
+            exchange.getResponseBody().write(json.getBytes("UTF-8"));
+          } catch (IOException ex) {
+            System.out.println("IO Exception! " + ex.getMessage());
+          }
+        } else {
+          try {
+            exchange.sendResponseHeaders(403, 0);
+          } catch (IOException ex) {
+            System.out.println("IOException during sending headers. " + ex.getMessage());
+          }
+        }
+      } catch (Exception ex) {
+        System.out.println("IOException during checking token. " + ex.getMessage());
+      }
+    } else {
+      try {
+        exchange.sendResponseHeaders(405, 0);
+      } catch (IOException ex) {
+        System.out.println("IOException during sending headers. " + ex.getMessage());
+      }
+    }
+
+    try {
+      exchange.getResponseBody().close();
+    } catch (IOException ex) {
+      System.out.println("error " + ex.getMessage());
+    }
+  }
+  
+  private void searchRequest(HttpExchange exchange) {
+    URI uri = exchange.getRequestURI();
+    String method = exchange.getRequestMethod();
+
+    if (method.equalsIgnoreCase("GET")) {
+      Headers responseHeaders = exchange.getResponseHeaders();
+      Headers requestHeaders = exchange.getRequestHeaders();
+      try {
+        if (requestHeaders.containsKey("token") && profile != null && profile.validateToken(requestHeaders.getFirst("token"))) {
+
+          profile.genToken();
+          responseHeaders.set("Content-Type", "application/json; charset=UTF-8");
+          responseHeaders.set("token", profile.getToken());
+
+          try {
+            exchange.sendResponseHeaders(200, 0);
+          } catch (IOException ex) {
+            System.out.println("IOException during sending headers. " + ex.getMessage());
+          }
+
+          Gson gson = new Gson();
+          SearchResponse response = new SearchResponse(true);
+
+          String path = uri.getPath();
+          String terms = path.length() > "/search".length() ? path.substring("/search/".length()) : "";
+          
+          response.setSuccessMessage(terms);
 
           String json = gson.toJson(response);
           try {

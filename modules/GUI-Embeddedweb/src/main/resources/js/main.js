@@ -80,7 +80,7 @@ function sendLogin() {
     success: function(data, textStatus, jqXHR) {
       if (data.success) {
         if (data.loginSuccess) {
-          loggedIn = jqXHR.getResponseHeader("token");
+          loggedIn = jqXHR.getResponseHeader("token");                              
           $("#loggedInEngine").html("Database: " + reqData.engine);
           $("#loginBoard").html("").attr("class", "");
           $("#dlgLogin").dialog('close');
@@ -136,6 +136,7 @@ function showNewEntry() {
     return false;
   });
   $("#dlgNewEntryInstance form#frmNewEntry input#entTitle").focus();
+  $("#dlgNewEntryInstance h2").attr("class", "new");
   initTagInput("entTags");
 }
 
@@ -185,7 +186,7 @@ function sendNewEntry() {
         reloadTags();
         setTimeout(function() {
           showUpdateEntry(data.id);
-        }, 1000);
+        }, 2000);
       } else {
         $("#entryBoard").html(data.errorMessage).attr("class", "error");
       }
@@ -282,15 +283,16 @@ function showUpdateEntry(id) {
         loggedIn = token;
       }
 
-      if (data.success) {
+      if (data.success) {        
         var entry = data.entry;
         var content = $("div#content");
         var dialog = $("div#dlgNewEntry");
         content.html(dialog.clone().attr("id", "dlgUpdateEntryInstance").show());
-        $("#dlgUpdateEntryInstance form#frmNewEntry").attr("id", "frmUpdateEntry")
+        $("#dlgUpdateEntryInstance form#frmNewEntry").attr("id", "frmUpdateEntry");
         $("#dlgUpdateEntryInstance form#frmUpdateEntry input#entTitle").focus();
-        $("#dlgUpdateEntryInstance form#frmUpdateEntry h2").html("Update Entry");
-        
+        $("#dlgUpdateEntryInstance h2").html("Update Entry");
+        $("#dlgUpdateEntryInstance h2").attr("class", "update");
+
         $("#entTitle").val(entry.title);
         $("#entDescription").val(entry.description);
         $("#entUsername").val(entry.username);
@@ -299,8 +301,16 @@ function showUpdateEntry(id) {
         $("#entURL").val(entry.url);
         $("#entIP").val(entry.ip);
         $("#entNote").val(entry.note);
-        
+
+        $("#dlgUpdateEntryInstance form#frmUpdateEntry").append($("<input/>", {type: "hidden", name: "id", value: entry.id}));
+
         initTagInput("entTags");
+
+/*
+        $("#dlgNewEntryInstance form#frmNewEntry").submit(function() {
+          sendUpdateEntry();
+          return false;
+        });*/
 
       } else {
         alert(data.errorMessage);

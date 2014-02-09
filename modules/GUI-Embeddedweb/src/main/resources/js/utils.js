@@ -35,8 +35,8 @@ function tagExists(tags, tag) {
   return result;
 }
 
-function checkPassword(input, passwordInputId) {
-    if (input.value != $("#" + passwordInputId).value) {
+function checkPassword(input, passwordInputId) {  
+    if (input.value != $("#" + passwordInputId).val()) {
         input.setCustomValidity('The two passwords must match.');
     } else {        
         input.setCustomValidity('');
