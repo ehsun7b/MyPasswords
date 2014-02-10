@@ -1,10 +1,47 @@
 var loggedIn = false;
 var allTags = [];
+var idleTime = 0;
+var TIMEOUT = 60;
+var idleInterval = null;
 
 $(function() {
   $("#container").hide();
   checkEngines();
   setEventHandlers();
+
+  // *********** idle detection *******  
+
+  //Increment the idle time counter every second.
+  idleInterval = setInterval(timerIncrement, 5000);
+
+  function timerIncrement() {
+    if (loggedIn) {
+      idleTime += 5;
+      if (idleTime >= TIMEOUT)
+      {
+        logout();
+      }
+      updateCounterBoard();
+    } else {
+      idleTime = 0;
+    }
+  }
+
+  $(this).mousemove(function(e) {
+    idleTime = 0;
+    updateCounterBoard();
+  });
+
+  $(this).keydown(function(e) {
+    idleTime = 0;
+    updateCounterBoard();
+  });
+  // **********************************
+
+
+  /*********** make buttons ***************/
+  decorateButtons();
+  /****************************************/
 });
 
 function checkEngines() {
@@ -53,8 +90,8 @@ function showLogin(engines) {
     open: function(event, ui) {
       $(".ui-dialog-titlebar-close").hide();
       setTimeout(function() {
-        $("input#password").focus()
-      }, 200);
+        $("input#password").focus();
+      }, 500);
       $("#frmLogin").submit(function() {
         try {
           sendLogin();
@@ -65,6 +102,8 @@ function showLogin(engines) {
       });
     }
   });
+
+  decorateButtons();
 }
 
 function sendLogin() {
@@ -77,16 +116,19 @@ function sendLogin() {
     type: "POST",
     contentType: "application/json",
     data: JSON.stringify(reqData),
+    beforeSend: function(xhr) {
+      $("#loginBoard").html("").attr("class", "");
+    },
     success: function(data, textStatus, jqXHR) {
       if (data.success) {
         if (data.loginSuccess) {
-          loggedIn = jqXHR.getResponseHeader("token");                              
+          loggedIn = jqXHR.getResponseHeader("token");
           $("#loggedInEngine").html("Database: " + reqData.engine);
           $("#loginBoard").html("").attr("class", "");
-          $("#dlgLogin").dialog('close');
-          $("#container").show();
+          $("#dlgLogin").dialog('close');          
           reloadTags();
           showSearch();
+          $("#container").show("fade", 500);
         } else {
           $("#loginBoard").html(data.loginMessage).attr("class", "warning");
         }
@@ -102,8 +144,7 @@ function sendLogin() {
 function setEventHandlers() {
   // logout link
   $("span#logout a").click(function() {
-    loggedIn = false;
-    document.location.reload();
+    logout();
   });
 
   // new entry button
@@ -135,6 +176,8 @@ function showNewEntry() {
     sendNewEntry();
     return false;
   });
+  decorateButtons();
+
   $("#dlgNewEntryInstance form#frmNewEntry input#entTitle").focus();
   $("#dlgNewEntryInstance h2").attr("class", "new");
   initTagInput("entTags");
@@ -173,6 +216,64 @@ function sendNewEntry() {
     contentType: 'application/json',
     data: JSON.stringify(reqData),
     beforeSend: function(xhr) {
+      $("#dlgNewEntryInstance form#frmNewEntry input#ok").attr("disabled", "disabled");
+      xhr.setRequestHeader("token", loggedIn);
+    },
+    success: function(data, textStatus, jqXHR) {
+      var token = jqXHR.getResponseHeader("token");
+      if (token !== null && token !== undefined) {
+        loggedIn = token;
+      }
+
+      if (data.success) {
+        reloadTags(function() {
+          showUpdateEntry(data.id, data.successMessage);
+        });
+      } else {
+        $("#entryBoard").html(data.errorMessage).attr("class", "error");
+      }
+    }
+  }).done(function() {
+    //$("#dlgNewEntryInstance form#frmNewEntry input#ok").removeAttr("disabled");
+  });
+}
+
+
+function sendUpdateEntry() {
+  var id = $("#entId").val();
+  var title = $("#entTitle").val();
+  var username = $("#entUsername").val();
+  var password = $("#entPassword").val();
+  var description = $("#entDescription").val();
+  var url = $("#entURL").val();
+  var ip = $("#entIP").val();
+  var note = $("#entNote").val();
+  var tags = $("#entTags").val().trim();
+
+  var reqData = {
+    "title": title, "username": username, "password": password, "description": description,
+    "url": url, "ip": ip, "note": note
+  };
+
+  if (tags.length > 0) {
+    var tempTags = tags.split(',');
+    reqData.tags = [];
+    var len = tempTags.length;
+    for (var i = 0; i < len; ++i) {
+      var tag = {"title": $.trim(tempTags[i])};
+      if (tag.title.length > 0 && !tagExists(reqData.tags, tag)) {
+        reqData.tags.push(tag);
+      }
+    }
+  }
+
+  $.ajax({
+    url: "/entry/" + id,
+    type: "PUT",
+    contentType: 'application/json',
+    data: JSON.stringify(reqData),
+    beforeSend: function(xhr) {
+      $("#dlgUpdateEntryInstance form#frmUpdateEntry input#ok").attr("disabled", "disabled");
       xhr.setRequestHeader("token", loggedIn);
     },
     success: function(data, textStatus, jqXHR) {
@@ -184,19 +285,16 @@ function sendNewEntry() {
       if (data.success) {
         $("#entryBoard").html(data.successMessage).attr("class", "info");
         reloadTags();
-        setTimeout(function() {
-          showUpdateEntry(data.id);
-        }, 2000);
       } else {
         $("#entryBoard").html(data.errorMessage).attr("class", "error");
       }
     }
   }).done(function() {
-
+    $("#dlgUpdateEntryInstance form#frmUpdateEntry input#ok").removeAttr("disabled");
   });
 }
 
-function reloadTags() {
+function reloadTags(doneCallback) {
   $.ajax({
     url: "/tags",
     type: "GET",
@@ -218,7 +316,9 @@ function reloadTags() {
       }
     }
   }).done(function() {
-
+    if (doneCallback != undefined) {
+      doneCallback();
+    }
   });
 }
 
@@ -270,7 +370,7 @@ function initTagInput(inputId) {
 }
 
 
-function showUpdateEntry(id) {
+function showUpdateEntry(id, successMessage) {
   $.ajax({
     url: "/entry/" + id,
     type: "GET",
@@ -283,13 +383,14 @@ function showUpdateEntry(id) {
         loggedIn = token;
       }
 
-      if (data.success) {        
+      if (data.success) {
         var entry = data.entry;
         var content = $("div#content");
         var dialog = $("div#dlgNewEntry");
         content.html(dialog.clone().attr("id", "dlgUpdateEntryInstance").show());
         $("#dlgUpdateEntryInstance form#frmNewEntry").attr("id", "frmUpdateEntry");
         $("#dlgUpdateEntryInstance form#frmUpdateEntry input#entTitle").focus();
+        $("#dlgUpdateEntryInstance form#frmUpdateEntry input#btnReset").remove();
         $("#dlgUpdateEntryInstance h2").html("Update Entry");
         $("#dlgUpdateEntryInstance h2").attr("class", "update");
 
@@ -302,16 +403,20 @@ function showUpdateEntry(id) {
         $("#entIP").val(entry.ip);
         $("#entNote").val(entry.note);
 
-        $("#dlgUpdateEntryInstance form#frmUpdateEntry").append($("<input/>", {type: "hidden", name: "id", value: entry.id}));
+        $("#dlgUpdateEntryInstance form#frmUpdateEntry").append($("<input/>", {type: "hidden", name: "entId", id: "entId", value: entry.id}));
 
         initTagInput("entTags");
 
-/*
-        $("#dlgNewEntryInstance form#frmNewEntry").submit(function() {
+        if (successMessage) { // function parameter
+          $("#entryBoard").html(successMessage).attr("class", "info");
+        }
+
+        $("#dlgUpdateEntryInstance form#frmUpdateEntry").submit(function() {
           sendUpdateEntry();
           return false;
-        });*/
+        });
 
+        decorateButtons();
       } else {
         alert(data.errorMessage);
       }
@@ -319,4 +424,25 @@ function showUpdateEntry(id) {
   }).done(function() {
 
   });
+}
+
+function updateCounterBoard() {
+  var time = TIMEOUT - idleTime;
+  $("#counter").html(time > 5 ? time : "0" + time);
+  if (idleTime >= 50) {
+    $("#counter").attr("class", "error");
+    $("#status").effect("shake", {}, 500);
+  } else if (idleTime >= 35) {
+    $("#counter").attr("class", "warning");
+  } else {
+    $("#counter").attr("class", "info");
+  }
+}
+
+function logout() {
+  if (loggedIn) {
+    $("#container").effect("fade", {}, 300, function() {
+      document.location.reload();
+    });
+  }
 }

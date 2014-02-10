@@ -19,26 +19,36 @@ function showMessageOk(title, msg, okCallBack) {
 
 function tagExists(tags, tag) {
   var result = false;
-  
+
   if ($.isArray(tags)) {
     var len = tags.length;
     for (var i = 0; i < len; ++i) {
       var cTag = tags[i];
-      
+
       if (cTag.title == tag.title) {
         result = true;
         break;
       }
     }
   }
-  
+
   return result;
 }
 
-function checkPassword(input, passwordInputId) {  
-    if (input.value != $("#" + passwordInputId).val()) {
-        input.setCustomValidity('The two passwords must match.');
-    } else {        
-        input.setCustomValidity('');
-   }
+function checkPassword(input, passwordInputId) {
+  if (input.value != $("#" + passwordInputId).val()) {
+    input.setCustomValidity('The two passwords must match.');
+  } else {
+    input.setCustomValidity('');
+  }
+}
+
+function decorateButtons() {
+  $(function() {
+    $(".button, .buttons input").button();
+  });
+
+  $(function() {
+    $('input:text, input:password, textarea, input[type=url]').attr("class", "text ui-widget-content ui-corner-all ui-state-default");    
+  });
 }

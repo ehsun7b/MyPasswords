@@ -15,10 +15,11 @@
   <body>
     <div id="container">
       <div id="status">
+        <span id="sessionCounter">Your session will close in <span id="counter">30</span> seconds</span>
         <span id="loggedInEngine"></span>
-        <span id="logout"><a href="#" title="Sign Out">Change</a></span>
+        <span id="logout"><a href="#" title="Sign Out">Close</a></span>
       </div>
-      <div id="mypasswords">MyPasswords 3.0</div>
+      <div id="mypasswords">MyPasswords 3.0 <span style="color: red; letter-spacing: 3px; font-size: 16px">ALPHA</span></div>
       <div id="toolbar">
         <input type="button" class="button" id="btnNew" value="New Entry"/>
         &nbsp;
@@ -126,8 +127,8 @@
           </tr>
           <tr>
             <td class="buttons" colspan="2">
-              <input type="reset" class="button" value="Clear"/>
-              <input type="submit" class="button" value="Save"/>
+              <input type="reset" class="button" id="btnReset" value="Clear"/>
+              <input type="submit" class="button" id="ok" value="Save"/>
             </td>
           </tr>
           <tr>

@@ -223,7 +223,7 @@ public class WebHandler implements HttpHandler {
             entry = profile.getEngine().insert(entry, tags);
             if (entry.getId() > 0) {
               ((InsertEntryResponse)response).setId(entry.getId());
-              response.setSuccessMessage(MessageFormat.format("The entry {0} saved successfully. ID: {1}", entry.getTitle(), entry.getId()));
+              response.setSuccessMessage(MessageFormat.format("The entry {0} saved successfully.", entry.getTitle()));
             } else {
               response.setSuccess(false);
               response.setErrorMessage(MessageFormat.format("The entry {0} was NOT saved.", entry.getTitle()));
@@ -347,7 +347,7 @@ public class WebHandler implements HttpHandler {
 
               entry = profile.getEngine().update(entry, tags);
               if (entry.getId() > 0) {
-                response.setSuccessMessage(MessageFormat.format("The entry {0} saved successfully. ID: {1}", entry.getTitle(), entry.getId()));
+                response.setSuccessMessage(MessageFormat.format("The entry {0} saved successfully.", entry.getTitle()));
               } else {
                 response.setSuccess(false);
                 response.setErrorMessage(MessageFormat.format("The entry {0} was NOT saved.", entry.getTitle()));
