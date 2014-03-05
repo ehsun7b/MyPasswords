@@ -37,11 +37,12 @@
       </toolsSet>
       <compileType>
         <cTool>
+          <architecture>1</architecture>
           <incDir>
-            <pElem>/usr/lib/jvm/java-7-oracle/include/linux</pElem>
-            <pElem>/usr/lib/jvm/java-7-oracle/include</pElem>
+            <pElem>C:/Program Files/Java/jdk1.7.0_17/include</pElem>
+            <pElem>C:/Program Files/Java/jdk1.7.0_17/include/win32</pElem>
           </incDir>
-          <commandLine>-shared -m32</commandLine>
+          <commandLine>-Wl,--add-stdcall-alias -shared -m32</commandLine>
         </cTool>
       </compileType>
       <item path="TokenGen.c" ex="false" tool="0" flavor2="0">
