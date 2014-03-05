@@ -22,5 +22,6 @@
     <modules>
         <module>../modules/engine/MypasswordsEngine</module>
         <module>../modules/models/MyPasswordsModels</module>
+        <module>../modules/gui-embedded-web/GUI-Embeddedweb</module>
     </modules>    
 </project>
