@@ -14,11 +14,11 @@ import java.util.Date;
  */
 public class LoginProfile {
 
-  static {
+  //static {
     //System.load("/home/ehsun7b/NetBeansProjects/MyPasswords/modules/dynamic-library/TokenGenerator/dist/Debug/GNU-Linux-x86/libTokenGenerator.so");
     //System.load("D:\\code\\MyPasswords\\modules\\dynamic-library\\TokenGenerator\\dist\\Debug\\MinGW-Windows\\libTokenGenerator.dll");    
-      //System.load("/Users/ehsun7b/NetBeansProjects/MyPasswords/modules/gui-embedded-web/GUI-Embeddedweb/src/main/resources/lib/libTokenGenerator.dylib");    
-
+    //System.load("/Users/ehsun7b/NetBeansProjects/MyPasswords/modules/gui-embedded-web/GUI-Embeddedweb/src/main/resources/lib/libTokenGenerator.dylib");    
+      /*
     try {
       System.loadLibrary("libTokenGenerator.dll");
     } catch (UnsatisfiedLinkError e) {
@@ -33,8 +33,8 @@ public class LoginProfile {
       } catch (IOException e1) {
         throw new RuntimeException(e1);
       }
-    }
-  }
+    }*/
+  //}
 
   private String token;
   private Date date;
@@ -74,7 +74,7 @@ public class LoginProfile {
       date = new Date();
       String timeStamp = CipherUtils.SHA256(date.getTime() + "");
       String pass = CipherUtils.SHA256(password);
-      token = CipherUtils.SHA256(nativeGenToken(pass, timeStamp));
+      token = "123";//CipherUtils.SHA256(nativeGenToken(pass, timeStamp));
     } else {
       throw new Exception("Password / Date is null.");
     }
@@ -92,28 +92,8 @@ public class LoginProfile {
     }
   }
 
-  private native String nativeGenToken(String password, String timeStamp);
+  //private native String nativeGenToken(String password, String timeStamp);
 
-  private native int nativeCheckToken(String token, String password, String timeStamp);
+  //private native int nativeCheckToken(String token, String password, String timeStamp);
 
-  public static void main(String[] args) throws NoSuchAlgorithmException {
-    LoginProfile loginProfile = new LoginProfile();
-    String password = "123";
-    String timestamp = "4566";
-
-    //System.out.println(pass.length() + " " + time.length());
-    //System.out.println(pass);
-    //System.out.println(time);
-    for (int i = 0; i < 100; i++) {
-
-      String pass = CipherUtils.SHA256(password);
-      String time = CipherUtils.SHA256(timestamp);
-
-      String token = loginProfile.nativeGenToken(pass, time);
-
-      System.out.println(token);
-    }
-    //int check = loginProfile.nativeCheckToken("23", pass, time);
-    //System.out.println(check);
-  }
 }

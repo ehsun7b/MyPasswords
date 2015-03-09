@@ -321,7 +321,7 @@ public class WebHandler implements HttpHandler {
             String strId = path.substring(lastIndexOfSlash + 1);
             System.out.println("UPDATE ENTRY ID: " + strId);
 
-            int id = 0;
+            int id;
 
             id = Integer.parseInt(strId);
 
