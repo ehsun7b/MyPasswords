@@ -17,15 +17,18 @@ public class LoginProfile {
   static {
     //System.load("/home/ehsun7b/NetBeansProjects/MyPasswords/modules/dynamic-library/TokenGenerator/dist/Debug/GNU-Linux-x86/libTokenGenerator.so");
     //System.load("D:\\code\\MyPasswords\\modules\\dynamic-library\\TokenGenerator\\dist\\Debug\\MinGW-Windows\\libTokenGenerator.dll");    
+      //System.load("/Users/ehsun7b/NetBeansProjects/MyPasswords/modules/gui-embedded-web/GUI-Embeddedweb/src/main/resources/lib/libTokenGenerator.dylib");    
 
     try {
       System.loadLibrary("libTokenGenerator.dll");
     } catch (UnsatisfiedLinkError e) {
       try {
         if (OSValidator.isWindows()) {
-          NativeUtils.loadLibraryFromJar("/lib/libTokenGenerator.dll");
+          NativeUtils.loadLibraryFromJar("/lib/libTokenGenerator64.dll");
         } else if (OSValidator.isUnix()) {
           NativeUtils.loadLibraryFromJar("/lib/libTokenGenerator.so");
+        } else if (OSValidator.isMac()) {
+            NativeUtils.loadLibraryFromJar("/lib/libTokenGenerator.dylib");
         }
       } catch (IOException e1) {
         throw new RuntimeException(e1);
