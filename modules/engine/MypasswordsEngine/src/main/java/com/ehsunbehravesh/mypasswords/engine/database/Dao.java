@@ -1,7 +1,7 @@
-package com.mypasswords7.engine.database;
+package com.ehsunbehravesh.mypasswords.engine.database;
 
-import com.mypasswords7.models.Entry;
-import com.mypasswords7.models.Tag;
+import com.ehsunbehravesh.mypasswords.models.Entry;
+import com.ehsunbehravesh.mypasswords.models.Tag;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

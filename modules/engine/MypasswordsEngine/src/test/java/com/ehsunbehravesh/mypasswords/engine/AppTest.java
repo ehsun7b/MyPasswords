@@ -1,4 +1,4 @@
-package com.mypasswords7.models;
+package com.ehsunbehravesh.mypasswords.engine;
 
 import junit.framework.Test;
 import junit.framework.TestCase;

@@ -1,4 +1,4 @@
-package com.mypasswords7.models;
+package com.ehsunbehravesh.mypasswords.models;
 
 /**
  *

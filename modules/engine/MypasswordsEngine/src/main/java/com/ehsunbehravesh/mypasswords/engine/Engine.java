@@ -1,11 +1,11 @@
-package com.mypasswords7.engine;
+package com.ehsunbehravesh.mypasswords.engine;
 
-import com.mypasswords7.engine.cipher.CipherUtils;
-import com.mypasswords7.engine.database.Dao;
-import com.mypasswords7.engine.database.Database;
-import com.mypasswords7.engine.log.LogUtils;
-import com.mypasswords7.models.Entry;
-import com.mypasswords7.models.Tag;
+import com.ehsunbehravesh.mypasswords.engine.database.Dao;
+import com.ehsunbehravesh.mypasswords.engine.log.LogUtils;
+import com.ehsunbehravesh.mypasswords.engine.cipher.CipherUtils;
+import com.ehsunbehravesh.mypasswords.engine.database.Database;
+import com.ehsunbehravesh.mypasswords.models.Entry;
+import com.ehsunbehravesh.mypasswords.models.Tag;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;

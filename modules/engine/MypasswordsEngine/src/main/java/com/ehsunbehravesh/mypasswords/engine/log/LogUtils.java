@@ -1,4 +1,4 @@
-package com.mypasswords7.engine.log;
+package com.ehsunbehravesh.mypasswords.engine.log;
 
 import org.apache.log4j.Logger;
 

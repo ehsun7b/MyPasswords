@@ -1,6 +1,5 @@
-package com.mypasswords7.engine.database;
+package com.ehsunbehravesh.mypasswords.engine.database;
 
-import com.mypasswords7.engine.Engine;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
