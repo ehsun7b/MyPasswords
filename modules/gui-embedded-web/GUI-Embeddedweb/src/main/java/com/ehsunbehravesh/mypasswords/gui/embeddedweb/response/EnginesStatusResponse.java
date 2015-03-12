@@ -1,4 +1,4 @@
-package com.mypasswords7.gui.embeddedweb.response;
+package com.ehsunbehravesh.mypasswords.gui.embeddedweb.response;
 
 /**
  *

@@ -1,7 +1,7 @@
-package com.mypasswords7.gui.embeddedweb.response;
+package com.ehsunbehravesh.mypasswords.gui.embeddedweb.response;
 
-import com.mypasswords7.models.Entry;
-import com.mypasswords7.models.Tag;
+import com.ehsunbehravesh.mypasswords.models.Entry;
+import com.ehsunbehravesh.mypasswords.models.Tag;
 
 /**
  *

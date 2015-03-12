@@ -1,4 +1,4 @@
-package com.mypasswords7.gui.embeddedweb.browser;
+package com.ehsunbehravesh.mypasswords.gui.embeddedweb.browser;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;

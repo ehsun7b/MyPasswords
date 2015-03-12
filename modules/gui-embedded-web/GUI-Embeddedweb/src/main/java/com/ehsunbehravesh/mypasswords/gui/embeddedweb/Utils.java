@@ -1,4 +1,4 @@
-package com.mypasswords7.gui.embeddedweb;
+package com.ehsunbehravesh.mypasswords.gui.embeddedweb;
 
 import java.io.File;
 import java.util.Properties;

@@ -1,9 +1,7 @@
-package com.mypasswords7.gui.embeddedweb;
+package com.ehsunbehravesh.mypasswords.gui.embeddedweb;
 
-import com.mypasswords7.gui.embeddedweb.browser.Browser;
 import com.sun.net.httpserver.HttpServer;
 import java.awt.Desktop;
-import java.awt.Dimension;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.concurrent.Executors;

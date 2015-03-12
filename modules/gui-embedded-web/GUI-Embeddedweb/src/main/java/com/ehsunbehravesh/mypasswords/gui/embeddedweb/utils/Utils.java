@@ -1,4 +1,4 @@
-package com.mypasswords7.gui.embeddedweb.utils;
+package com.ehsunbehravesh.mypasswords.gui.embeddedweb.utils;
 
 import java.io.IOException;
 import java.io.StringReader;

@@ -1,10 +1,8 @@
-package com.mypasswords7.gui.embeddedweb;
+package com.ehsunbehravesh.mypasswords.gui.embeddedweb;
 
-import com.mkyong.core.OSValidator;
-import com.mypasswords7.engine.Engine;
-import com.mypasswords7.engine.cipher.CipherUtils;
-import cz.adamh.utils.NativeUtils;
-import java.io.IOException;
+import com.ehsunbehravesh.mypasswords.engine.Engine;
+import com.ehsunbehravesh.mypasswords.engine.cipher.CipherUtils;
+
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 
