@@ -1,0 +1,16 @@
+JxBrowser Local Maven repo
+
+mvn install:install-file -Dfile=/Users/ehsun7b/JAR/jxbrowser-5_1/lib/jxbrowser-5.1.jar -DgroupId=com.teamdev.jxbrowser -DartifactId=jxbrowser -Dversion=5.1 -Dpackaging=jar
+
+mvn install:install-file -Dfile=/Users/ehsun7b/JAR/jxbrowser-5_1/lib/jxbrowser-linux32-5.1.jar -DgroupId=com.teamdev.jxbrowser -DartifactId=jxbrowserLinux32 -Dversion=5.1 -Dpackaging=jar
+
+mvn install:install-file -Dfile=/Users/ehsun7b/JAR/jxbrowser-5_1/lib/jxbrowser-linux64-5.1.jar -DgroupId=com.teamdev.jxbrowser -DartifactId=jxbrowserLinux64 -Dversion=5.1 -Dpackaging=jar
+
+mvn install:install-file -Dfile=/Users/ehsun7b/JAR/jxbrowser-5_1/lib/jxbrowser-mac-5.1.jar -DgroupId=com.teamdev.jxbrowser -DartifactId=jxbrowserMac -Dversion=5.1 -Dpackaging=jar
+
+mvn install:install-file -Dfile=/Users/ehsun7b/JAR/jxbrowser-5_1/lib/jxbrowser-win-5.1.jar -DgroupId=com.teamdev.jxbrowser -DartifactId=jxbrowserWin -Dversion=5.1 -Dpackaging=jar
+
+mvn install:install-file -Dfile=/Users/ehsun7b/JAR/jxbrowser-5_1/lib/Licence/development.jar -DgroupId=com.teamdev.jxbrowser -DartifactId=jxbrowserLicenseDev -Dversion=5.1 -Dpackaging=jar
+
+mvn install:install-file -Dfile=/Users/ehsun7b/JAR/jxbrowser-5_1/lib/Licence/runtime.jar -DgroupId=com.teamdev.jxbrowser -DartifactId=jxbrowserLicenseRuntime -Dversion=5.1 -Dpackaging=jar
+
