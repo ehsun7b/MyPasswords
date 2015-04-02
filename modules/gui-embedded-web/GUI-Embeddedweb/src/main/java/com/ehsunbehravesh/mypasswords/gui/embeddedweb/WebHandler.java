@@ -92,7 +92,7 @@ public class WebHandler implements HttpHandler {
       exchange.sendResponseHeaders(200, 0);
 
       try (OutputStream os = exchange.getResponseBody()) {
-        try (InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("page/home.html")) {
+        try (InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("page/index.html")) {
           byte[] buffer = new byte[BUFFER_SIZE];
           int len;
 
