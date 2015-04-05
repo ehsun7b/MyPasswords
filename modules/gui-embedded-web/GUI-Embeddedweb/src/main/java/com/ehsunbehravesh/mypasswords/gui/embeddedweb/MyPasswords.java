@@ -2,8 +2,8 @@ package com.ehsunbehravesh.mypasswords.gui.embeddedweb;
 
 import com.ehsunbehravesh.mypasswords.gui.embeddedweb.browser.JxBrowserContainer;
 import com.sun.net.httpserver.HttpServer;
-import com.teamdev.jxbrowser.chromium.Browser;
-import com.teamdev.jxbrowser.chromium.swing.BrowserView;
+//import com.teamdev.jxbrowser.chromium.Browser;
+//import com.teamdev.jxbrowser.chromium.swing.BrowserView;
 
 import javax.swing.*;
 import java.awt.*;
@@ -19,8 +19,6 @@ public class MyPasswords {
   private static final String versionName = "3.0 Beta";
   private static final int PORT = 6265;
   private static final String CONTEXT_PATH = "/";
-  private static Browser browser;
-  private static BrowserView browserView;
 
   public static void main(String[] args) {
     try {
@@ -32,17 +30,17 @@ public class MyPasswords {
       server.start();
       System.out.println("MyPasswords is running on http://localhost:" + PORT + CONTEXT_PATH);
 
-      try {
-        final JxBrowserContainer browser = new JxBrowserContainer(versionName, 800, 600, "http://" + addrress.getHostName() + ":" + PORT);
+      //try {
+        //final JxBrowserContainer browser = new JxBrowserContainer(versionName, 800, 600, "http://" + addrress.getHostName() + ":" + PORT);
 
-      } catch (Exception e) {
+      //} catch (Exception e) {
         //System.out.println("Warning: " + e.getMessage());
         try {
           openWebpage(new URI("http://localhost:6265"));
         } catch (Exception ex) {
           System.out.println("Warning: Can not open default browser. " /*+ ex.getMessage()*/);
         }
-      }
+      //}
     } catch (Exception ex) {
       System.out.println("Error: " + ex.getMessage());
     }
