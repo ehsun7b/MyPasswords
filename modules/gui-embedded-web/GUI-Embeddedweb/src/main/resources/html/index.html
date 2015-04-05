@@ -9,24 +9,31 @@
 
   </head>
   <body>
-    <input type="button" onclick="location.reload()" value="refresh"/><br/><br/>
-    <div class="toolbar">
+    <span class="btn" onclick="">refresh</span><br/><br/>
+    <div data-ng-show="{{loggedIn}}" class="toolbar">
       <span class="btn toolbar-btn">
         <i class="fa fa-eye"></i>
       </span>
 
     </div>
 
-
+    <a href="#!search">search</a>
+    
     <div data-ng-view class="pageContent" style="min-height: 300px;"></div>
 
     <script src="js/lib/angular.js"></script>
     <script src="js/lib/angular-route.js"></script>
-    <script src="js/lib/angular-material.js"></script>
+    <!--<script src="js/lib/angular-material.js"></script>-->
 
+    <script src="js/services/angular-local-storage.min.js"></script>
     <script src="js/app.js"></script>
+   
+    <script src="js/services/Server.js"></script>
+    
     <script src="js/controllers/MainCtrl.js"></script>
     <script src="js/controllers/HomeCtrl.js"></script>
+    <script src="js/controllers/SearchCtrl.js"></script>
+    <script src="js/controllers/LoginCtrl.js"></script>
 
   </body>
 </html>

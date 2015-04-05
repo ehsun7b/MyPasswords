@@ -1,5 +1,6 @@
 "use strict";
-app.controller("HomeCtrl", function ($rootScope, $scope, $http) {
-  console.info("Home Controller");
+var app = app || null;
+app.controller("HomeCtrl", function ($rootScope, $scope, $http, $log) {
+  $log.debug("Home Controller");
   
 });

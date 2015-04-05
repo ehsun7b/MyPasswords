@@ -1,7 +1,7 @@
 "use strict";
-var app = angular.module("app", ["ngRoute"]);
+var app = angular.module("app", ["ngRoute", "LocalStorageModule"]);
 
-app.config(function ($routeProvider, $locationProvider) {
+app.config(function ($routeProvider, $locationProvider, $logProvider) {
   $routeProvider
           .when("/", {
             templateUrl: "html/home.html",
@@ -11,6 +11,14 @@ app.config(function ($routeProvider, $locationProvider) {
             templateUrl: "page/entry.html",
             controller: "EntryCtrl"
           })*/
+          .when("/search", {
+            templateUrl: "html/search.html",
+            controller: "SearchCtrl"
+          })
+          .when("/login", {
+            templateUrl: "html/login.html",
+            controller: "LoginCtrl"
+          })
           .otherwise({
             redirectTo: "/"
           });
@@ -18,11 +26,13 @@ app.config(function ($routeProvider, $locationProvider) {
   $locationProvider
           .html5Mode(false)
           .hashPrefix("!");
+  
+  $logProvider.debugEnabled(true);
 
 });
 
 
-app.run(function ($rootScope, $interval, $window) {
-  console.info("app run");
-
+app.run(function ($rootScope, $interval, $window, $log) {
+  $log.info("MyPasswords starts");
+  $rootScope.logLevel = ["info", "log", "warn", "error"];
 });

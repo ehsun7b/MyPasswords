@@ -863,7 +863,7 @@ public class WebHandler implements HttpHandler {
   }
 
   private void loginRequest(HttpExchange exchange) {
-    URI uri = exchange.getRequestURI();
+    //URI uri = exchange.getRequestURI();
     String method = exchange.getRequestMethod();
 
     if (method.equalsIgnoreCase("POST")) {

@@ -1,166 +1,50 @@
 @font-face {
-    font-family: 'bonvenocflight';
-    src: url('/font/bonvenocf_light_macroman/BonvenoCF-Light-webfont.eot');
-    src: url('/font/bonvenocf_light_macroman/BonvenoCF-Light-webfont.eot?#iefix') format('embedded-opentype'),
-         url('/font/bonvenocf_light_macroman/BonvenoCF-Light-webfont.woff') format('woff'),
-         url('/font/bonvenocf_light_macroman/BonvenoCF-Light-webfont.ttf') format('truetype'),
-         url('/font/bonvenocf_light_macroman/BonvenoCF-Light-webfont.svg#bonvenocflight') format('svg');
-    font-weight: normal;
-    font-style: normal;
+  font-family: 'bonvenocflight';
+  src: url('/font/bonvenocf_light_macroman/BonvenoCF-Light-webfont.eot');
+  src: url('/font/bonvenocf_light_macroman/BonvenoCF-Light-webfont.eot?#iefix') format('embedded-opentype'),
+    url('/font/bonvenocf_light_macroman/BonvenoCF-Light-webfont.woff') format('woff'),
+    url('/font/bonvenocf_light_macroman/BonvenoCF-Light-webfont.ttf') format('truetype'),
+    url('/font/bonvenocf_light_macroman/BonvenoCF-Light-webfont.svg#bonvenocflight') format('svg');
+  font-weight: normal;
+  font-style: normal;
 
 }
 
 
 body {
-    margin: 30px;
-    font-family: 'bonvenocflight';
-    color: red;
-    /*font: normal normal 12px tahoma;*/
-    
+  margin: 30px;
+  font-family: 'bonvenocflight';
+  cursor: default;
+
+
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
+.btn {
+  font-family: 'bonvenocflight';
+  font-size: 14px;
+  display: inline-block;
+  padding: 6px;
+  background-color: #AAA;
+  border-radius: 3px;
+  cursor: default;
+  text-transform: uppercase;
+  box-shadow: 2px 2px 2px 1px #CCC;
 
-
-div#container {    
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
-div#mypasswords {
-    font: normal bold 20px "times new roman"; 
-}
-
-div#status {
-    float: right;
-}
-
-div#status span#sessionCounter, div#status span#counter {
-    font-size: 10px;
-    font-weight: bold;
-}
-
-div#status span#loggedInEngine, div#status span#logout {
-    background-color: #EEF;    
-    padding: 2px;
-    border-radius: 2px;
-    display: inline-block;
-}
-
-div#toolbar {
-    margin-top: 10px;
-}
-
-table.form {
-
-}
-
-table.form td {
-    vertical-align: top;
-}
-
-table.form td.caption {
-
-}
-
-table.form td.data {
-
-}
-
-table.form td.buttons {
-    text-align: right;
-    padding: 0px;
-    padding-top: 5px;    
-}
-
-.warning {
-    background-color: darkorange;
-    color: white;
-}
-
-.error {
-    background-color: red;
-    color: white;
-}
-
-.info {
-    background-color: green;
-    color: white;
-}
-
-.info, .warning, .error {
-    padding: 3px;
-    border-radius: 3px;
-}
-/*
-.button {
-    display: inline-block;    
-    cursor: default;
-    padding: 4px;
-    border-radius: 4px;
-    background-color: #74b2e2;
-    box-shadow: 1px 1px 1px #aaa;
-    border: none;
-    min-width: 70px;
-}
-*/
-#toolbar .button {
-    font-size: 10px;
-    min-width: 80px;
-}
-/*
-.button:focus {
-    outline: none;
-}
-
-.button:active {
-    box-shadow: 0px 0px 0px #aaa;
-    position: relative;
-    top: 1px;
-    left: 1px;    
-}
-
-.button[disabled="disabled"]:active {
-    box-shadow: 1px 1px 1px #aaa;
-    position: relative;
-    top: 0px;
-    left: 0px;
-}*/
-
-
-form input[type=text], form.frmEntry input[type=password], form.frmEntry input[type=url], form.frmEntry textArea {
-    /*border: 1px solid black;*/
-    min-width: 400px;
-    width: 100%;
-    padding: 2px;
-    font: normal bold 12px tahoma;
-}
-
-form.frmEntry textArea {
-    height: 100px;    
-}
-
-input:focus, textArea:focus {
-    outline: none;
-}
-
-form.frmEntry input:invalid {
-    /*border-color: #ff0000;*/    
-}
-
-input:invalid, input:-moz-ui-invalid {    
-    outline:none;
-    box-shadow:none;
-    -moz-box-shadow:none;
-    -webkit-box-shadow:none;
-}
-
-h2.new {
-    color: blue;
-}
-
-h2.update {
-    color: green;
-}
-
-.blink {
-    outline: #ff0000 1px solid;
-    border: 1px solid #fff;
+.btn:active {
+  box-shadow: none;
+  position: relative;
+  left: 2px;
+  top: 2px;
 }
