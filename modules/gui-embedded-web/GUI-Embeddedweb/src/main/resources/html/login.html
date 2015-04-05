@@ -1,1 +1,24 @@
 <h1>Login page</h1>
+
+<form data-ng-submit="submit()">
+  <table>
+    <tr>
+      <td>Database:</td>
+      <td>
+        <select data-ng-model="database" data-ng-options="db.engineName for db in databases"></select>
+      </td>
+    </tr>
+    <tr>
+      <td>Password:</td>
+      <td>
+        <input type="password" data-ng-model="password"/>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2">
+        <span class="btn" data-ng-click="submit()">OK</span>
+      </td>
+    </tr>
+  </table>
+  <div id="board" class="{{messageType}}">{{message}}</div>
+</form>

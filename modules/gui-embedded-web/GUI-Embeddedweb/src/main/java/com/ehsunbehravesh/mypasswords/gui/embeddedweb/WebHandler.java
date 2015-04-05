@@ -43,7 +43,7 @@ import javax.crypto.NoSuchPaddingException;
  */
 public class WebHandler implements HttpHandler {
 
-  private static final int BUFFER_SIZE = 2048;
+  private static final int BUFFER_SIZE = 2048 * 10;
 
   private LoginProfile profile;
   private static final String DATABASES_DIR = "databases";
@@ -124,8 +124,7 @@ public class WebHandler implements HttpHandler {
   private void loadJS(HttpExchange exchange) throws IOException {
     URI requestURI = exchange.getRequestURI();
     if (exchange.getRequestMethod().equalsIgnoreCase("GET")) {
-      String path = requestURI.getPath();//.toLowerCase();
-      //String script = "js/" + path.substring(path.lastIndexOf("/") + 1);
+      String path = requestURI.getPath();
       String script = path.startsWith("/") ? path.substring(1) : path;
 
       if (script != null) {
@@ -155,13 +154,8 @@ public class WebHandler implements HttpHandler {
   private void loadCSS(HttpExchange exchange) throws IOException {
     URI requestURI = exchange.getRequestURI();
     if (exchange.getRequestMethod().equalsIgnoreCase("GET")) {
-      String path = requestURI.getPath();//.toLowerCase();
+      String path = requestURI.getPath();
       String css = path.startsWith("/") ? path.substring(1) : path;
-
-      /*
-      if (requestURI.getRawPath().endsWith("main.css")) {
-        css = "css/main.css";
-      }*/
 
       if (css != null) {
         Headers responseHeaders = exchange.getResponseHeaders();

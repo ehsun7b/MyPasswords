@@ -48,3 +48,24 @@ body {
   left: 2px;
   top: 2px;
 }
+
+.toolbar-btn:hover {
+  text-shadow: 0px 0px 1px #000;
+  
+}
+
+.toolbar-btn-selected {
+  text-shadow: 0px 0px 1px #000;
+}
+
+.info {
+  color: green;
+}
+
+.warning {
+  color: orangered;
+}
+
+.error {
+  color: red;
+}
