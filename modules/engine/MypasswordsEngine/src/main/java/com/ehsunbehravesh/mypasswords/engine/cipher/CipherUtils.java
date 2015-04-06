@@ -27,7 +27,7 @@ public class CipherUtils {
           NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
     byte[] byteKey = key.getBytes("UTF8");
     byte[] byteText = text.getBytes("UTF8");
-    Cipher c = Cipher.getInstance("AES");
+    Cipher c = Cipher.getInstance("AES/CBC/NOPADDING");
     SecretKeySpec k = new SecretKeySpec(byteKey, "AES");
     c.init(Cipher.ENCRYPT_MODE, k);
     byte[] byteEncrypted = c.doFinal(byteText);
@@ -38,7 +38,7 @@ public class CipherUtils {
   public static byte[] encrypt(String key, byte[] byteText) throws UnsupportedEncodingException,
           NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
     byte[] byteKey = key.getBytes("UTF8");
-    Cipher c = Cipher.getInstance("AES");
+    Cipher c = Cipher.getInstance("AES/CBC/NOPADDING");
     SecretKeySpec k = new SecretKeySpec(byteKey, "AES");
     c.init(Cipher.ENCRYPT_MODE, k);
     byte[] byteEncrypted = c.doFinal(byteText);
@@ -50,7 +50,7 @@ public class CipherUtils {
           BadPaddingException, IOException {
     byte[] byteKey = key.getBytes("UTF8");
     byte[] byteEncrypted = Base64Coder.decode(encrypted);
-    Cipher c = Cipher.getInstance("AES");
+    Cipher c = Cipher.getInstance("AES/CBC/NOPADDING");
     SecretKeySpec k = new SecretKeySpec(byteKey, "AES");
     c.init(Cipher.DECRYPT_MODE, k);
     byte[] byteText = c.doFinal(byteEncrypted);
@@ -62,7 +62,7 @@ public class CipherUtils {
           NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException,
           BadPaddingException, IOException {
     byte[] byteKey = key.getBytes("UTF8");
-    Cipher c = Cipher.getInstance("AES");
+    Cipher c = Cipher.getInstance("AES/CBC/NOPADDING");
     SecretKeySpec k = new SecretKeySpec(byteKey, "AES");
     c.init(Cipher.DECRYPT_MODE, k);
     byte[] byteText = c.doFinal(byteEncrypted);
