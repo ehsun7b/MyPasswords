@@ -8,12 +8,12 @@ public class DevelopmentKeyProvider implements KeyProvider {
 
   @Override
   public char[] appKey() {
-    return "ogvecfiqba2qvrn".toCharArray();
+    return "xhyqa5qhwzyb2me".toCharArray();
   }
 
   @Override
   public char[] appSecret() {
-    return "888jp6f6ofufiyg".toCharArray();
+    return "jyv8gqc2pazs4yg".toCharArray();
   }
   
 }
